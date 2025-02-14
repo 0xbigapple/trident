@@ -1,6 +1,17 @@
 //def VERSION = '0.9.2'
-def VERSION = findProperty('version') ?: '0.9.2'
-def GROUP = findProperty('group') ?: 'io.github.tronprotocol'
+def VERSION = System.getenv('VERSION') ?: findProperty('version') ?: '0.9.2'
+def GROUP = System.getenv('GROUP') ?: findProperty('group') ?: 'trident'
+
+println """
+Build Environment:
+    VERSION from env: ${System.getenv('VERSION')}
+    GROUP from env: ${System.getenv('GROUP')}
+    version property: ${findProperty('version')}
+    group property: ${findProperty('group')}
+    Final VERSION: ${VERSION}
+    Final GROUP: ${GROUP}
+"""
+
 group = GROUP
 
 buildscript {

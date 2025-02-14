@@ -186,11 +186,17 @@ tasks.register('buildLib', Jar) {
 }
 
 tasks.register('printArtifactPaths') {
+    mustRunAfter tasks.withType(PublishToMavenLocal)
+
     doLast {
         println "Checking artifact paths..."
+        def m2Dir = new File(System.getProperty('user.home'), '.m2/repository')
+        println "M2 Repository path: ${m2Dir.absolutePath}"
         println "M2 Repository contents:"
-        project.exec {
-            commandLine 'ls', '-R', System.getProperty('user.home') + '/.m2/repository/'
+        m2Dir.eachFileRecurse { file ->
+            if (file.name.endsWith('.jar') || file.name.endsWith('.pom')) {
+                println file.absolutePath
+            }
         }
     }
 }
@@ -200,7 +206,7 @@ tasks.named('build') {
 }
 
 tasks.named('publishToMavenLocal') {
-    dependsOn printArtifactPaths
+    finalizedBy printArtifactPaths
 }
 
 artifacts {

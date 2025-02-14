@@ -192,11 +192,24 @@ tasks.register('printArtifactPaths') {
         println "Checking artifact paths..."
         def m2Dir = new File(System.getProperty('user.home'), '.m2/repository')
         println "M2 Repository path: ${m2Dir.absolutePath}"
-        println "M2 Repository contents:"
-        m2Dir.eachFileRecurse { file ->
-            if (file.name.endsWith('.jar') || file.name.endsWith('.pom')) {
-                println file.absolutePath
+
+        def maxWaitTime = 10000
+        def startTime = System.currentTimeMillis()
+
+        while (!m2Dir.exists() && (System.currentTimeMillis() - startTime < maxWaitTime)) {
+            println "Waiting for M2 repository to be created..."
+            Thread.sleep(1000)
+        }
+
+        if (m2Dir.exists()) {
+            println "M2 Repository contents:"
+            m2Dir.eachFileRecurse { file ->
+                if (file.name.endsWith('.jar') || file.name.endsWith('.pom')) {
+                    println file.absolutePath
+                }
             }
+        } else {
+            println "M2 Repository directory was not created after waiting"
         }
     }
 }

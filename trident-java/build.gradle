@@ -196,7 +196,11 @@ tasks.register('printArtifactPaths') {
 }
 
 tasks.named('build') {
-    dependsOn javadocJar, sourcesJar, buildLib, printArtifactPaths
+    dependsOn javadocJar, sourcesJar, buildLib
+}
+
+tasks.named('publishToMavenLocal') {
+    dependsOn printArtifactPaths
 }
 
 artifacts {

@@ -1,0 +1,4 @@
+jdk:
+  - openjdk8
+install:
+  - ./gradlew clean -Pgroup=trident -Pversion=${VERSION} -xtest publishToMavenLocal

@@ -1,4 +1,9 @@
 jdk:
   - openjdk8
+before_install:
+  - echo "Building version ${VERSION}"
 install:
   - ./gradlew clean -Pgroup=trident -Pversion=${VERSION} -xtest publishToMavenLocal
+  - ls -la ~/.m2/repository/trident/core/${VERSION}/
+  - ls -la ~/.m2/repository/trident/abi/${VERSION}/
+  - ls -la ~/.m2/repository/trident/utils/${VERSION}/

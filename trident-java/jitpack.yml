@@ -1,7 +1,8 @@
 jdk:
   - openjdk8
 before_install:
-  - echo "Building version ${VERSION}"
+  - RELEASE_VERSION=${VERSION/v/}  # 去掉 v 前缀
+  - echo "Building version ${RELEASE_VERSION}"
 install:
   - ./gradlew clean -Pgroup=trident -Pversion=${VERSION} -xtest publishToMavenLocal
   - ls -la ~/.m2/repository/trident/core/${VERSION}/

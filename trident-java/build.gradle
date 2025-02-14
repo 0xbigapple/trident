@@ -1,6 +1,7 @@
 //def VERSION = '0.9.2'
 def VERSION = findProperty('version') ?: '0.9.2'
-group 'io.github.tronprotocol'
+def GROUP = findProperty('group') ?: 'io.github.tronprotocol'
+group = GROUP
 
 buildscript {
     repositories {
@@ -173,8 +174,18 @@ tasks.register('buildLib', Jar) {
     }
 }
 
+tasks.register('printArtifactPaths') {
+    doLast {
+        println "Checking artifact paths..."
+        println "M2 Repository contents:"
+        project.exec {
+            commandLine 'ls', '-R', System.getProperty('user.home') + '/.m2/repository/'
+        }
+    }
+}
+
 tasks.named('build') {
-    dependsOn javadocJar, sourcesJar, buildLib
+    dependsOn javadocJar, sourcesJar, buildLib, printArtifactPaths
 }
 
 artifacts {

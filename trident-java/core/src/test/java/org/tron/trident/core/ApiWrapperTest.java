@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.ByteString;
 import io.grpc.ClientInterceptor;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -32,6 +33,7 @@ import org.tron.trident.proto.Chain;
 import org.tron.trident.proto.Chain.Block;
 import org.tron.trident.proto.Chain.Transaction;
 import org.tron.trident.proto.Contract.TriggerSmartContract;
+import org.tron.trident.proto.Response.Account;
 import org.tron.trident.proto.Response.BlockExtention;
 import org.tron.trident.proto.Response.ExchangeList;
 import org.tron.trident.proto.Response.MarketOrder;
@@ -45,7 +47,7 @@ import org.tron.trident.proto.Response.TransactionExtention;
 import org.tron.trident.proto.Response.TransactionInfoList;
 import org.tron.trident.proto.Response.TransactionReturn;
 
-@Disabled("add private key to enable this case")
+//@Disabled("add private key to enable this case")
 class ApiWrapperTest extends BaseTest {
 
   @Test
@@ -66,6 +68,25 @@ class ApiWrapperTest extends BaseTest {
 
     //System.out.println(block.getBlockHeader());
     assertTrue(block.getBlockHeader().getRawDataOrBuilder().getNumber() > 0);
+    client.close();
+  }
+
+  @Test
+  @Disabled
+  void testGetNowBlockWithTLS() throws IllegalException {
+    ApiWrapper client =
+        new ApiWrapper.Builder(
+                "localhost:50051",
+                "localhost:50052",
+                KeyPair.generate().toPrivateKey())
+            .withTimeout(20000)
+            //          .withTLS(new File("/opt/homebrew/etc/nginx/cert/server.crt"))
+            .withTLS(null)
+            .build();
+
+    Block block = client.getNowBlock();
+    assertTrue(block.getBlockHeader().getRawData().getNumber() >= 0);
+    client.close();
   }
 
   @Test

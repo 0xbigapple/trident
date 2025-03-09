@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
+import org.tron.trident.core.key.KeyPair;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BaseTest {
@@ -25,7 +26,12 @@ public class BaseTest {
 
       tokenId = properties.getProperty("tron.tokenId");
 
-      client = ApiWrapper.ofNile(privateKey);
+      try {
+        client = ApiWrapper.ofNile(privateKey);
+      } catch (Exception e) {
+        client = ApiWrapper.ofNile(KeyPair.generate().toPrivateKey());
+      }
+
       testAddress = client.keyPair.toBase58CheckAddress();
 
     } catch (IOException e) {

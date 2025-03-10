@@ -61,21 +61,29 @@ class ApiWrapperTest extends BaseTest {
   @Test
   void testGetNowBlockQueryWithTimeout() throws IllegalException {
     List<ClientInterceptor> clientInterceptors = new ArrayList<>();
-    ApiWrapper client = new ApiWrapper(Constant.FULLNODE_NILE, Constant.FULLNODE_NILE_SOLIDITY,
-        KeyPair.generate().toPrivateKey(), clientInterceptors,
-        2000);
-    Chain.Block block = client.getNowBlock();
+    ApiWrapper client1 = null;
+    try {
+      client1 = new ApiWrapper(Constant.FULLNODE_NILE, Constant.FULLNODE_NILE_SOLIDITY,
+          KeyPair.generate().toPrivateKey(), clientInterceptors,
+          2000);
+      Chain.Block block = client1.getNowBlock();
 
-    //System.out.println(block.getBlockHeader());
-    assertTrue(block.getBlockHeader().getRawDataOrBuilder().getNumber() > 0);
-    client.close();
+      assertTrue(block.getBlockHeader().getRawDataOrBuilder().getNumber() > 0);
+    } finally {
+      if (client1 != null) {
+        client1.close();
+      }
+    }
+
+
   }
 
   @Test
   @Disabled
   void testGetNowBlockWithTLS() throws IllegalException {
-    ApiWrapper client =
-        new ApiWrapper.Builder(
+    ApiWrapper client1 = null;
+    try {
+      client1 = new ApiWrapper.Builder(
                 "localhost:50051",
                 "localhost:50052",
                 KeyPair.generate().toPrivateKey())
@@ -84,9 +92,13 @@ class ApiWrapperTest extends BaseTest {
             .withTLS(null)
             .build();
 
-    Block block = client.getNowBlock();
-    assertTrue(block.getBlockHeader().getRawData().getNumber() >= 0);
-    client.close();
+      Block block = client1.getNowBlock();
+      assertTrue(block.getBlockHeader().getRawData().getNumber() >= 0);
+    } finally {
+      if (client1 != null) {
+        client1.close();
+      }
+    }
   }
 
   @Test

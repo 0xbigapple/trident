@@ -141,7 +141,7 @@ import org.tron.trident.utils.Numeric;
  * <pre>
  * ApiWrapper wrapper = new ApiWrapper.Builder(grpcEndpoint, grpcEndpointSolidity, privateKey)
  *     .withApiKey("your-api-key")    // Optional: set API key
- *     .withTLS()                     // Optional: enable TLS
+ *     .withTLS(new File("xxx.crt"))                     // Optional: enable TLS
  *     .withTimeout(5000)             // Optional: set request timeout in milliseconds
  *     .build();
  * </pre>

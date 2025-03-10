@@ -26,11 +26,11 @@ public class BaseTest {
 
       tokenId = properties.getProperty("tron.tokenId");
 
-      try {
-        client = ApiWrapper.ofNile(privateKey);
-      } catch (Exception e) {
-        client = ApiWrapper.ofNile(KeyPair.generate().toPrivateKey());
+      if (privateKey.length() != 64) {
+        privateKey = KeyPair.generate().toPrivateKey();
       }
+
+      client = ApiWrapper.ofNile(privateKey);
 
       testAddress = client.keyPair.toBase58CheckAddress();
 

@@ -157,56 +157,56 @@ public class ApiWrapper implements Api {
 
   /**
    * @deprecated Since 0.9.3, scheduled for removal in future versions. Recommend using Builder pattern to create ApiWrapper
-   * @see ApiWrapper.Builder
+   * @see ApiWrapperBuilder
    */
   @Deprecated
   public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey) {
-    this(new Builder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey));
+    this(new ApiWrapperBuilder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey));
   }
 
   /**
    * @deprecated Since 0.9.3, scheduled for removal in future versions. Recommend using Builder pattern to create ApiWrapper
-   * @see ApiWrapper.Builder
+   * @see ApiWrapperBuilder
    */
   @Deprecated
   public ApiWrapper(
       String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey, String apiKey) {
-    this(new Builder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey).withApiKey(apiKey));
+    this(new ApiWrapperBuilder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey).withApiKey(apiKey));
   }
 
   /**
    * @deprecated Since 0.9.3, scheduled for removal in future versions. Recommend using Builder pattern to create ApiWrapper
-   * @see ApiWrapper.Builder
+   * @see ApiWrapperBuilder
    */
   @Deprecated
   public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey,
       List<ClientInterceptor> clientInterceptors) {
-    this(new Builder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey)
+    this(new ApiWrapperBuilder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey)
         .withInterceptors(clientInterceptors));
   }
 
   /**
    * @deprecated Since 0.9.3, scheduled for removal in future versions. Recommend using Builder pattern to create ApiWrapper
-   * @see ApiWrapper.Builder
+   * @see ApiWrapperBuilder
    */
   @Deprecated
   public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey,
       int timeout) {
-    this(new Builder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey).withTimeout(timeout));
+    this(new ApiWrapperBuilder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey).withTimeout(timeout));
   }
 
   /**
    * @deprecated Since 0.9.3, scheduled for removal in future versions. Recommend using Builder pattern to create ApiWrapper
-   * @see ApiWrapper.Builder
+   * @see ApiWrapperBuilder
    */
   public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey,
       List<ClientInterceptor> clientInterceptors, int timeout) {
-    this(new Builder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey)
+    this(new ApiWrapperBuilder(grpcEndpoint, grpcEndpointSolidity, hexPrivateKey)
         .withInterceptors(clientInterceptors)
         .withTimeout(timeout));
   }
 
-  private ApiWrapper(Builder builder) {
+  private ApiWrapper(ApiWrapperBuilder builder) {
     // Build interceptors list
     List<ClientInterceptor> interceptors = new ArrayList<>();
 
@@ -241,12 +241,12 @@ public class ApiWrapper implements Api {
   }
 
   private ManagedChannel buildChannel(
-      String target, Builder builder, List<ClientInterceptor> interceptors) {
+      String target, ApiWrapperBuilder builder, List<ClientInterceptor> interceptors) {
     ManagedChannelBuilder<?> channelBuilder = createChannelBuilder(target, builder);
     return applyInterceptors(channelBuilder, interceptors).build();
   }
 
-  private ManagedChannelBuilder<?> createChannelBuilder(String target, Builder builder) {
+  private ManagedChannelBuilder<?> createChannelBuilder(String target, ApiWrapperBuilder builder) {
     if (!builder.useTLS) {
       return ManagedChannelBuilder.forTarget(target).usePlaintext();
     }
@@ -281,7 +281,7 @@ public class ApiWrapper implements Api {
     return channelBuilder;
   }
 
-  public static class Builder {
+  public static class ApiWrapperBuilder {
     private final String grpcEndpoint;
     private final String grpcEndpointSolidity;
     private final String hexPrivateKey;
@@ -294,7 +294,7 @@ public class ApiWrapper implements Api {
     private List<ClientInterceptor> interceptors = new ArrayList<>();
     private long timeoutMs = 0; // Default: no timeout
 
-    public Builder(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey) {
+    public ApiWrapperBuilder(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey) {
       this.grpcEndpoint = grpcEndpoint;
       this.grpcEndpointSolidity = grpcEndpointSolidity;
       this.hexPrivateKey = hexPrivateKey;
@@ -305,7 +305,7 @@ public class ApiWrapper implements Api {
      * Enable TLS with custom certificate for private full node
      * @param certFile The certificate file for the full node
      */
-    public Builder withTLS(File certFile) {
+    public ApiWrapperBuilder withTLS(File certFile) {
       this.useTLS = true;
       this.trustCertCollection = certFile;
       this.authority = extractAuthority(grpcEndpoint);
@@ -315,7 +315,7 @@ public class ApiWrapper implements Api {
     /**
      * Set API key for TronGrid
      */
-    public Builder withApiKey(String apiKey) {
+    public ApiWrapperBuilder withApiKey(String apiKey) {
       this.apiKey = apiKey;
       return this;
     }
@@ -323,7 +323,7 @@ public class ApiWrapper implements Api {
     /**
      * Set timeout in milliseconds for all requests
      */
-    public Builder withTimeout(long timeoutMs) {
+    public ApiWrapperBuilder withTimeout(long timeoutMs) {
       this.timeoutMs = timeoutMs;
       return this;
     }
@@ -332,7 +332,7 @@ public class ApiWrapper implements Api {
     /**
      * Add multiple custom interceptors
      */
-    public Builder withInterceptors(List<ClientInterceptor> interceptors) {
+    public ApiWrapperBuilder withInterceptors(List<ClientInterceptor> interceptors) {
       this.interceptors.addAll(interceptors);
       return this;
     }
@@ -408,7 +408,7 @@ public class ApiWrapper implements Api {
    */
   @Deprecated
   public static ApiWrapper ofMainnet(String hexPrivateKey) {
-    return new Builder(Constant.TRONGRID_MAIN_NET,
+    return new ApiWrapperBuilder(Constant.TRONGRID_MAIN_NET,
         Constant.TRONGRID_MAIN_NET_SOLIDITY,
         hexPrivateKey)
         .build();
@@ -421,7 +421,7 @@ public class ApiWrapper implements Api {
    * @return a ApiWrapper object
    */
   public static ApiWrapper ofShasta(String hexPrivateKey) {
-    return new Builder(
+    return new ApiWrapperBuilder(
         Constant.TRONGRID_SHASTA,
         Constant.TRONGRID_SHASTA_SOLIDITY,
         hexPrivateKey)
@@ -435,7 +435,7 @@ public class ApiWrapper implements Api {
    * @return a ApiWrapper object
    */
   public static ApiWrapper ofNile(String hexPrivateKey) {
-    return new Builder(Constant.FULLNODE_NILE,
+    return new ApiWrapperBuilder(Constant.FULLNODE_NILE,
         Constant.FULLNODE_NILE_SOLIDITY,
         hexPrivateKey)
         .build();
@@ -448,8 +448,8 @@ public class ApiWrapper implements Api {
    * @param apiKey this function works with TronGrid, an API key is required.
    * @return a Builder instance pre-configured for mainnet
    */
-  public static Builder mainnetBuilder(String hexPrivateKey, String apiKey) {
-    return new Builder(
+  public static ApiWrapperBuilder mainnetBuilder(String hexPrivateKey, String apiKey) {
+    return new ApiWrapperBuilder(
             Constant.TRONGRID_MAIN_NET, Constant.TRONGRID_MAIN_NET_SOLIDITY, hexPrivateKey)
         .withApiKey(apiKey);
   }
@@ -460,8 +460,8 @@ public class ApiWrapper implements Api {
    * @param hexPrivateKey the binding private key
    * @return a Builder instance pre-configured for Nile testnet
    */
-  public static Builder nileBuilder(String hexPrivateKey) {
-    return new Builder(Constant.FULLNODE_NILE, Constant.FULLNODE_NILE_SOLIDITY, hexPrivateKey);
+  public static ApiWrapperBuilder nileBuilder(String hexPrivateKey) {
+    return new ApiWrapperBuilder(Constant.FULLNODE_NILE, Constant.FULLNODE_NILE_SOLIDITY, hexPrivateKey);
   }
 
   /**
@@ -470,8 +470,8 @@ public class ApiWrapper implements Api {
    * @param hexPrivateKey the binding private key
    * @return a Builder instance pre-configured for Shasta testnet
    */
-  public static Builder shastaBuilder(String hexPrivateKey) {
-    return new Builder(Constant.TRONGRID_SHASTA, Constant.TRONGRID_SHASTA_SOLIDITY, hexPrivateKey);
+  public static ApiWrapperBuilder shastaBuilder(String hexPrivateKey) {
+    return new ApiWrapperBuilder(Constant.TRONGRID_SHASTA, Constant.TRONGRID_SHASTA_SOLIDITY, hexPrivateKey);
   }
 
   /**

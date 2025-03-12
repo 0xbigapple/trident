@@ -26,6 +26,7 @@ import org.tron.trident.abi.datatypes.Bool;
 import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.generated.Uint256;
 import org.tron.trident.api.GrpcAPI.EmptyMessage;
+import org.tron.trident.core.ApiWrapper.ApiWrapperBuilder;
 import org.tron.trident.core.exceptions.IllegalException;
 import org.tron.trident.core.key.KeyPair;
 import org.tron.trident.core.utils.ByteArray;
@@ -33,7 +34,6 @@ import org.tron.trident.proto.Chain;
 import org.tron.trident.proto.Chain.Block;
 import org.tron.trident.proto.Chain.Transaction;
 import org.tron.trident.proto.Contract.TriggerSmartContract;
-import org.tron.trident.proto.Response.Account;
 import org.tron.trident.proto.Response.BlockExtention;
 import org.tron.trident.proto.Response.ExchangeList;
 import org.tron.trident.proto.Response.MarketOrder;
@@ -83,7 +83,7 @@ class ApiWrapperTest extends BaseTest {
   void testGetNowBlockWithTLS() throws IllegalException {
     ApiWrapper client1 = null;
     try {
-      client1 = new ApiWrapper.Builder(
+      client1 = new ApiWrapperBuilder(
                 "localhost:50051",
                 "localhost:50052",
                 KeyPair.generate().toPrivateKey())

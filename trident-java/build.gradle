@@ -1,4 +1,4 @@
-def VERSION = '0.9.2'
+def VERSION = '0.10.0'
 group 'io.github.tronprotocol'
 
 buildscript {
@@ -11,10 +11,11 @@ buildscript {
             url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
         }
         mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
-        classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
+        classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
+        classpath 'com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:8.1.1'
     }
 }
 
@@ -65,6 +66,12 @@ allprojects {
             force "com.google.guava:guava:$googleGuavaVersion"
         }
     }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
+    }
 }
 
 subprojects {
@@ -83,10 +90,10 @@ subprojects {
     dependencies {
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
 
-        compileOnly 'org.projectlombok:lombok:1.18.12'
-        annotationProcessor 'org.projectlombok:lombok:1.18.12'
-        testCompileOnly 'org.projectlombok:lombok:1.18.12'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+        compileOnly 'org.projectlombok:lombok:1.18.30'
+        annotationProcessor 'org.projectlombok:lombok:1.18.30'
+        testCompileOnly 'org.projectlombok:lombok:1.18.30'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
     }
 
     test {
@@ -98,13 +105,13 @@ subprojects {
 
     tasks.register('sourcesJar', Jar) {
         dependsOn classes
-        classifier = 'sources'
+        archiveClassifier = 'sources'
         from sourceSets.main.allSource
     }
 
     tasks.register('javadocJar', Jar) {
         dependsOn javadoc
-        classifier = 'javadoc'
+        archiveClassifier = 'javadoc'
         from javadoc.destinationDir
     }
 

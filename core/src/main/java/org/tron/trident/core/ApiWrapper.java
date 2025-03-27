@@ -384,6 +384,15 @@ public class ApiWrapper implements Api {
     return toHex(raw.toByteArray());
   }
 
+  /**
+   * Check if using solidity node
+   * @param nodeType Optional node type array
+   * @return true if using solidity node, false otherwise
+   */
+  private boolean useSolidityNode(NodeType... nodeType) {
+    return nodeType.length > 0 && nodeType[0] == NodeType.SOLIDITY_NODE;
+  }
+
   public static VoteWitnessContract createVoteWitnessContract(ByteString ownerAddress,
       Map<String, String> votes) {
     VoteWitnessContract.Builder builder = VoteWitnessContract.newBuilder();
@@ -1305,15 +1314,21 @@ public class ApiWrapper implements Api {
    * Get account info by address
    *
    * @param address address, default hexString
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return Account
    */
   @Override
-  public Account getAccount(String address) {
+  public Account getAccount(String address, NodeType... nodeType) {
     ByteString bsAddress = parseAddress(address);
     AccountAddressMessage accountAddressMessage = AccountAddressMessage.newBuilder()
         .setAddress(bsAddress)
         .build();
-    return blockingStub.getAccount(accountAddressMessage);
+
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getAccount(accountAddressMessage)
+        : blockingStub.getAccount(accountAddressMessage);
   }
 
   /**
@@ -1404,7 +1419,7 @@ public class ApiWrapper implements Api {
   /**
    * Returns all resources delegations from an account to another account. The fromAddress can be retrieved from the GetDelegatedResourceAccountIndex API
    *
-   * @param fromAddress energy from address,, default hexString
+   * @param fromAddress energy from address, default hexString
    * @param toAddress energy delegation information, default hexString
    * @return DelegatedResourceList
    */
@@ -1824,6 +1839,8 @@ public class ApiWrapper implements Api {
   /**
    * Get solid account info by address
    *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getAccount(String address, NodeType.SOLIDITY_NODE) instead
    * @param address address, default hexString
    * @return Account
    */

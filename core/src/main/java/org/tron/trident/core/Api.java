@@ -141,7 +141,7 @@ public interface Api {
 
   Transaction getTransactionById(String txID) throws IllegalException;
 
-  Account getAccount(String address);
+  Account getAccount(String address, NodeType... nodeType);
 
   AccountResourceMessage getAccountResource(String address);
 
@@ -369,4 +369,5 @@ public interface Api {
   TransactionExtention deployContract(String contractName, String abiStr, String bytecode,
       List<Type<?>> constructorParams, long feeLimit, long consumeUserResourcePercent,
       long originEnergyLimit, long callValue, String tokenId, long tokenValue) throws Exception;
+
 }

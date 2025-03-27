@@ -233,18 +233,58 @@ service Wallet {
 // NOTE: All other solidified APIs are useless.
 service WalletSolidity {
   rpc GetAccount(AccountAddressMessage) returns (Account) {}
+  rpc GetAccountById (Account) returns (Account) {}
+  rpc GetBlock (BlockReq) returns (BlockExtention) {}
+  rpc GetNowBlock(EmptyMessage) returns (Block) {}
   rpc GetNowBlock2(EmptyMessage) returns (BlockExtention) {}
+  rpc GetBlockByNum (NumberMessage) returns (Block) {}
   // rpc GetBlockByLatestNum2(NumberMessage) returns (BlockListExtention) {}
+
   rpc GetTransactionById(BytesMessage) returns (Transaction) {}
   rpc GetTransactionInfoByBlockNum(NumberMessage) returns (TransactionInfoList) {}
-  rpc GetRewardInfo(BytesMessage) returns (NumberMessage) {}     // ???
-  rpc GetTransactionFromPending (BytesMessage) returns (Transaction) {}
+  rpc GetTransactionInfoById (BytesMessage) returns (TransactionInfo) {}
+  rpc GetTransactionCountByBlockNum (NumberMessage) returns (NumberMessage) {}
+
+  rpc EstimateEnergy (TriggerSmartContract) returns (EstimateEnergyMessage) {}
+  rpc TriggerConstantContract (TriggerSmartContract) returns (TransactionExtention) {}
+
+  rpc GetBrokerageInfo (BytesMessage) returns (NumberMessage) {}
+  rpc GetRewardInfo(BytesMessage) returns (NumberMessage) {}
+
+  rpc GetAssetIssueList (EmptyMessage) returns (AssetIssueList) {}
+  rpc GetPaginatedAssetIssueList (PaginatedMessage) returns (AssetIssueList) {}
+  rpc GetAssetIssueByName (BytesMessage) returns (AssetIssueContract) {}
+  rpc GetAssetIssueListByName (BytesMessage) returns (AssetIssueList) {}
+  rpc GetAssetIssueById (BytesMessage) returns (AssetIssueContract) {}
+
+  rpc GetBurnTrx (EmptyMessage) returns (NumberMessage) {}
 
   //query resource price
   rpc GetBandwidthPrices (EmptyMessage) returns (PricesResponseMessage) {}
   rpc GetEnergyPrices (EmptyMessage) returns (PricesResponseMessage) {}
 
-  rpc GetBlock (BlockReq) returns (BlockExtention) {}
+  rpc ListWitnesses (EmptyMessage) returns (WitnessList) {}
+
+  rpc GetExchangeById (BytesMessage) returns (Exchange) {};
+  rpc ListExchanges (EmptyMessage) returns (ExchangeList) {};
+  rpc GetMarketOrderById (BytesMessage) returns (MarketOrder) {}
+  rpc GetMarketOrderByAccount (BytesMessage) returns (MarketOrderList) {}
+  rpc GetMarketPriceByPair (MarketOrderPair) returns (MarketPriceList) {}
+  rpc GetMarketOrderListByPair (MarketOrderPair) returns (MarketOrderList) {}
+  rpc GetMarketPairList (EmptyMessage) returns (MarketOrderPairList) {}
+
+
+  rpc GetAvailableUnfreezeCount (GetAvailableUnfreezeCountRequestMessage)
+    returns (GetAvailableUnfreezeCountResponseMessage) {};
+  rpc GetCanWithdrawUnfreezeAmount (CanWithdrawUnfreezeAmountRequestMessage)
+    returns (CanWithdrawUnfreezeAmountResponseMessage) {}
+  rpc GetCanDelegatedMaxSize (CanDelegatedMaxSizeRequestMessage)
+    returns (CanDelegatedMaxSizeResponseMessage) {}
+  rpc GetDelegatedResource (DelegatedResourceMessage) returns (DelegatedResourceList) {}
+  rpc GetDelegatedResourceV2 (DelegatedResourceMessage) returns (DelegatedResourceList) {}
+  rpc GetDelegatedResourceAccountIndex (BytesMessage) returns (DelegatedResourceAccountIndex) {}
+  rpc GetDelegatedResourceAccountIndexV2 (BytesMessage) returns (DelegatedResourceAccountIndex) {}
+
 };
 
 message EmptyMessage {}

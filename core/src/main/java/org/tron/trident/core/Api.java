@@ -109,9 +109,11 @@ public interface Api {
 
   long getCanDelegatedMaxSize(String ownerAddress, int type, NodeType... nodeType);
 
-  DelegatedResourceList getDelegatedResourceV2(String fromAddress, String toAddress, NodeType... nodeType);
+  DelegatedResourceList getDelegatedResourceV2(String fromAddress, String toAddress,
+      NodeType... nodeType);
 
-  DelegatedResourceAccountIndex getDelegatedResourceAccountIndexV2(String address, NodeType... nodeType)
+  DelegatedResourceAccountIndex getDelegatedResourceAccountIndexV2(String address,
+      NodeType... nodeType)
       throws IllegalException;
 
   TransactionExtention voteWitness(String ownerAddress, HashMap<String, String> votes)
@@ -135,7 +137,8 @@ public interface Api {
 
   NodeList listNodes() throws IllegalException;
 
-  TransactionInfoList getTransactionInfoByBlockNum(long blockNum, NodeType... nodeType) throws IllegalException;
+  TransactionInfoList getTransactionInfoByBlockNum(long blockNum, NodeType... nodeType)
+      throws IllegalException;
 
   TransactionInfo getTransactionInfoById(String txID, NodeType... nodeType) throws IllegalException;
 

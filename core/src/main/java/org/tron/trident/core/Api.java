@@ -101,11 +101,11 @@ public interface Api {
 
   TransactionExtention withdrawExpireUnfreeze(String ownerAddress) throws IllegalException;
 
-  long getAvailableUnfreezeCount(String ownerAddress);
+  long getAvailableUnfreezeCount(String ownerAddress, NodeType... nodeType);
 
-  long getCanWithdrawUnfreezeAmount(String ownerAddress);
+  long getCanWithdrawUnfreezeAmount(String ownerAddress, NodeType... nodeType);
 
-  long getCanWithdrawUnfreezeAmount(String ownerAddress, long timestamp);
+  long getCanWithdrawUnfreezeAmount(String ownerAddress, long timestamp, NodeType... nodeType);
 
   long getCanDelegatedMaxSize(String ownerAddress, int type);
 

@@ -32,6 +32,8 @@ import org.tron.trident.api.GrpcAPI.BlockLimit;
 import org.tron.trident.api.GrpcAPI.BlockReq;
 import org.tron.trident.api.GrpcAPI.BytesMessage;
 import org.tron.trident.api.GrpcAPI.EmptyMessage;
+import org.tron.trident.api.GrpcAPI.GetAvailableUnfreezeCountRequestMessage;
+import org.tron.trident.api.GrpcAPI.GetAvailableUnfreezeCountResponseMessage;
 import org.tron.trident.api.GrpcAPI.NumberMessage;
 import org.tron.trident.api.GrpcAPI.PaginatedMessage;
 import org.tron.trident.api.WalletGrpc;
@@ -963,16 +965,24 @@ public class ApiWrapper implements Api {
    * query remaining times of executing unstake operation
    *
    * @param ownerAddress owner address
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   *
+   * @return remaining times of executing unstake operation
    */
   @Override
-  public long getAvailableUnfreezeCount(String ownerAddress) {
+  public long getAvailableUnfreezeCount(String ownerAddress, NodeType... nodeType) {
     ByteString rawOwner = parseAddress(ownerAddress);
-    GrpcAPI.GetAvailableUnfreezeCountRequestMessage getAvailableUnfreezeCountRequestMessage =
-        GrpcAPI.GetAvailableUnfreezeCountRequestMessage.newBuilder()
+    GetAvailableUnfreezeCountRequestMessage requestMessage =
+        GetAvailableUnfreezeCountRequestMessage.newBuilder()
             .setOwnerAddress(rawOwner)
             .build();
-    GrpcAPI.GetAvailableUnfreezeCountResponseMessage responseMessage =
-        blockingStub.getAvailableUnfreezeCount(getAvailableUnfreezeCountRequestMessage);
+
+    GetAvailableUnfreezeCountResponseMessage responseMessage =
+        useSolidityNode(nodeType)
+            ? blockingStubSolidity.getAvailableUnfreezeCount(requestMessage)
+            : blockingStub.getAvailableUnfreezeCount(requestMessage);
 
     return responseMessage.getCount();
   }
@@ -982,17 +992,23 @@ public class ApiWrapper implements Api {
    * query the withdrawable balance at the latest block timestamp
    *
    * @param ownerAddress owner address
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return withdrawable balance amount
    */
   @Override
-  public long getCanWithdrawUnfreezeAmount(String ownerAddress) {
+  public long getCanWithdrawUnfreezeAmount(String ownerAddress, NodeType... nodeType) {
     ByteString rawOwner = parseAddress(ownerAddress);
-    GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage getAvailableUnfreezeCountRequestMessage =
+    GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage request =
         GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage.newBuilder()
             .setOwnerAddress(rawOwner)
             .build();
+
     GrpcAPI.CanWithdrawUnfreezeAmountResponseMessage responseMessage =
-        blockingStub.getCanWithdrawUnfreezeAmount(
-            getAvailableUnfreezeCountRequestMessage);
+        useSolidityNode(nodeType)
+            ? blockingStubSolidity.getCanWithdrawUnfreezeAmount(request)
+            : blockingStub.getCanWithdrawUnfreezeAmount(request);
 
     return responseMessage.getAmount();
   }
@@ -1003,18 +1019,25 @@ public class ApiWrapper implements Api {
    *
    * @param ownerAddress owner address
    * @param timestamp specified timestamp, milliseconds
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return withdrawable balance amount
    */
   @Override
-  public long getCanWithdrawUnfreezeAmount(String ownerAddress, long timestamp) {
+  public long getCanWithdrawUnfreezeAmount(String ownerAddress,
+      long timestamp, NodeType... nodeType) {
     ByteString rawOwner = parseAddress(ownerAddress);
-    GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage getAvailableUnfreezeCountRequestMessage =
+    GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage request =
         GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage.newBuilder()
             .setOwnerAddress(rawOwner)
             .setTimestamp(timestamp)
             .build();
+
     GrpcAPI.CanWithdrawUnfreezeAmountResponseMessage responseMessage =
-        blockingStub.getCanWithdrawUnfreezeAmount(
-            getAvailableUnfreezeCountRequestMessage);
+        useSolidityNode(nodeType)
+            ? blockingStubSolidity.getCanWithdrawUnfreezeAmount(request)
+            : blockingStub.getCanWithdrawUnfreezeAmount(request);
 
     return responseMessage.getAmount();
   }
@@ -1184,6 +1207,7 @@ public class ApiWrapper implements Api {
   @Override
   public BlockListExtention getBlockByLatestNum(long num) throws IllegalException {
     NumberMessage numberMessage = NumberMessage.newBuilder().setNum(num).build();
+    //not support SolidityNode
     BlockListExtention blockListExtention = blockingStub.getBlockByLatestNum2(numberMessage);
 
     if (blockListExtention.getBlockCount() == 0) {
@@ -1208,6 +1232,7 @@ public class ApiWrapper implements Api {
         .setStartNum(startNum)
         .setEndNum(endNum)
         .build();
+    // not support SolidityNode
     BlockListExtention blockListExtention = blockingStub.getBlockByLimitNext2(blockLimit);
 
     if (endNum - startNum > 100) {
@@ -1228,6 +1253,7 @@ public class ApiWrapper implements Api {
    */
   @Override
   public NodeInfo getNodeInfo() throws IllegalException {
+    //not support SolidityNode
     NodeInfo nodeInfo = blockingStub.getNodeInfo(EmptyMessage.newBuilder().build());
 
     if (nodeInfo.getBlock().isEmpty()) {
@@ -1244,6 +1270,7 @@ public class ApiWrapper implements Api {
    */
   @Override
   public NodeList listNodes() throws IllegalException {
+    //not support SolidityNode
     NodeList nodeList = blockingStub.listNodes(EmptyMessage.newBuilder().build());
 
     if (nodeList.getNodesCount() == 0) {
@@ -1343,6 +1370,7 @@ public class ApiWrapper implements Api {
     AccountAddressMessage account = AccountAddressMessage.newBuilder()
         .setAddress(bsAddress)
         .build();
+    //not support SolidityNode
     return blockingStub.getAccountResource(account);
   }
 
@@ -1358,6 +1386,7 @@ public class ApiWrapper implements Api {
     AccountAddressMessage account = AccountAddressMessage.newBuilder()
         .setAddress(bsAddress)
         .build();
+    //not support SolidityNode
     return blockingStub.getAccountNet(account);
   }
 
@@ -1496,6 +1525,7 @@ public class ApiWrapper implements Api {
     AccountAddressMessage request = AccountAddressMessage.newBuilder()
         .setAddress(addressBS)
         .build();
+    //not support SolidityNode
     return blockingStub.getAssetIssueByAccount(request);
   }
 

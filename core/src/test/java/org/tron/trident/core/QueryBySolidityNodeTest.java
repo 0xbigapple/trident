@@ -6,9 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 import org.tron.trident.core.exceptions.IllegalException;
+import org.tron.trident.proto.Chain.Transaction;
 import org.tron.trident.proto.Response.Account;
 import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
+import org.tron.trident.proto.Chain.Block;
+import org.tron.trident.proto.Response.BlockExtention;
+import org.tron.trident.proto.Response.TransactionInfoList;
+import org.tron.trident.proto.Response.TransactionInfo;
+import org.tron.trident.core.utils.ByteArray;
+import org.tron.trident.core.utils.Sha256Hash;
 
 class QueryBySolidityNodeTest extends BaseTest {
 
@@ -57,6 +64,45 @@ class QueryBySolidityNodeTest extends BaseTest {
         testAddress, NodeType.SOLIDITY_NODE);
     assertNotNull(indexSolidity);
     assertTrue(indexSolidity.getToAccountsCount() >= 0 );
+  }
+
+  @Test
+  void testGetNowBlock() throws IllegalException {
+    Block blockSolidity = client.getNowBlock(NodeType.SOLIDITY_NODE);
+    assertNotNull(blockSolidity);
+    assertTrue(blockSolidity.getBlockHeader().getRawData().getNumber() > 0);
+  }
+
+  @Test
+  void testGetBlockByNum() throws IllegalException {
+    BlockExtention blockSolidity = client.getBlockByNum(55157371, NodeType.SOLIDITY_NODE);
+    assertNotNull(blockSolidity);
+    assertEquals(55157371, blockSolidity.getBlockHeader().getRawData().getNumber());
+  }
+
+  @Test
+  void testGetTransactionInfoByBlockNum() throws IllegalException {
+    TransactionInfoList infoListSolidity = client.getTransactionInfoByBlockNum(55157371, NodeType.SOLIDITY_NODE);
+    assertNotNull(infoListSolidity);
+    assertTrue(infoListSolidity.getTransactionInfoCount() > 0);
+  }
+
+  @Test
+  void testGetTransactionInfoById() throws IllegalException {
+    //usdt transfer tx
+    String txId = "d3c0afaf7db3ca7a6713d15331b397be781d6e57356ced46324ad1dc66b6c4c0";
+    TransactionInfo infoSolidity = client.getTransactionInfoById(txId, NodeType.SOLIDITY_NODE);
+    assertNotNull(infoSolidity);
+    assertTrue(infoSolidity.getFee() > 0);
+    assertTrue(infoSolidity.getLogCount() > 0);
+  }
+
+  @Test
+  void testGetTransactionById() throws IllegalException {
+    String txId = "d3c0afaf7db3ca7a6713d15331b397be781d6e57356ced46324ad1dc66b6c4c0";
+    Transaction txnSolidity = client.getTransactionById(txId, NodeType.SOLIDITY_NODE);
+    assertNotNull(txnSolidity);
+    assertTrue(txnSolidity.getRawData().getTimestamp() > 0);
   }
 
 }

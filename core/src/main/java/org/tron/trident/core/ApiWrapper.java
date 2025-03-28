@@ -1184,12 +1184,17 @@ public class ApiWrapper implements Api {
   /**
    * Query the latest block information
    *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return Block
    * @throws IllegalException if fail to get now block
    */
   @Override
-  public Block getNowBlock() throws IllegalException {
-    Block block = blockingStub.getNowBlock(EmptyMessage.newBuilder().build());
+  public Block getNowBlock(NodeType... nodeType) throws IllegalException {
+    Block block = useSolidityNode(nodeType)
+        ? blockingStubSolidity.getNowBlock(EmptyMessage.newBuilder().build())
+        : blockingStub.getNowBlock(EmptyMessage.newBuilder().build());
     if (!block.hasBlockHeader()) {
       throw new IllegalException("Fail to get latest block.");
     }
@@ -1197,17 +1202,23 @@ public class ApiWrapper implements Api {
   }
 
   /**
-   * Returns the Block Object corresponding to the 'Block Height' specified (number of blocks preceding it)
+   * Query block information by block height,  it called getBlockByNum2 rpc
    *
    * @param blockNum The block height
-   * @return BlockExtention block details
-   * @throws IllegalException if the parameters are not correct
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return BlockExtention
+   * @throws IllegalException if fail to get block
    */
-  @Override
-  public BlockExtention getBlockByNum(long blockNum) throws IllegalException {
+  public BlockExtention getBlockByNum(long blockNum, NodeType... nodeType)
+      throws IllegalException {
     NumberMessage.Builder builder = NumberMessage.newBuilder();
     builder.setNum(blockNum);
-    BlockExtention block = blockingStub.getBlockByNum2(builder.build());
+    BlockExtention block =
+        useSolidityNode(nodeType)
+            ? blockingStubSolidity.getBlockByNum2(builder.build())
+            : blockingStub.getBlockByNum2(builder.build());
 
     if (!block.hasBlockHeader()) {
       throw new IllegalException();
@@ -1301,33 +1312,44 @@ public class ApiWrapper implements Api {
    * Get transactionInfo from block number
    *
    * @param blockNum The block height
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return TransactionInfoList
    * @throws IllegalException no transactions or the blockNum is incorrect
    */
   @Override
-  public TransactionInfoList getTransactionInfoByBlockNum(long blockNum) throws IllegalException {
+  public TransactionInfoList getTransactionInfoByBlockNum(long blockNum, NodeType... nodeType)
+      throws IllegalException {
     if (blockNum < 0) {
       throw new IllegalException("blockNum must be >= 0");
     }
     NumberMessage numberMessage = NumberMessage.newBuilder().setNum(blockNum).build();
-    return blockingStub.getTransactionInfoByBlockNum(numberMessage);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getTransactionInfoByBlockNum(numberMessage)
+        : blockingStub.getTransactionInfoByBlockNum(numberMessage);
   }
 
   /**
    * Query the transaction fee, block height by transaction id
    *
    * @param txID Transaction hash, i.e. transaction id
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return TransactionInfo
    * @throws IllegalException if the parameters are not correct
    */
   @Override
-  public TransactionInfo getTransactionInfoById(String txID) throws IllegalException {
+  public TransactionInfo getTransactionInfoById(String txID, NodeType... nodeType)
+      throws IllegalException {
     ByteString bsTxId = ByteString.copyFrom(ByteArray.fromHexString(txID));
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(bsTxId)
         .build();
-    TransactionInfo transactionInfo = blockingStub.getTransactionInfoById(request);
-
+    TransactionInfo transactionInfo = useSolidityNode(nodeType)
+        ? blockingStubSolidity.getTransactionInfoById(request)
+        : blockingStub.getTransactionInfoById(request);
     if (transactionInfo.getBlockTimeStamp() == 0) {
       throw new IllegalException();
     }
@@ -1338,17 +1360,23 @@ public class ApiWrapper implements Api {
    * Query transaction information by transaction id
    *
    * @param txID Transaction hash, i.e. transaction id
+   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return Transaction
    * @throws IllegalException if the parameters are not correct
    */
   @Override
-  public Transaction getTransactionById(String txID) throws IllegalException {
+  public Transaction getTransactionById(String txID, NodeType... nodeType)
+      throws IllegalException {
     ByteString bsTxId = ByteString.copyFrom(ByteArray.fromHexString(txID));
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(bsTxId)
         .build();
-    Transaction transaction = blockingStub.getTransactionById(request);
-
+    Transaction transaction = useSolidityNode(nodeType)
+        ? blockingStubSolidity.getTransactionById(request)
+        : blockingStub.getTransactionById(request);
     if (transaction.getRetCount() == 0) {
       throw new IllegalException();
     }

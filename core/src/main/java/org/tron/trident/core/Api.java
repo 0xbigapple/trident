@@ -123,9 +123,9 @@ public interface Api {
   //only if account.getAccountName() == null can update name
   TransactionExtention updateAccount(String address, String accountName) throws IllegalException;
 
-  Block getNowBlock() throws IllegalException;
+  Block getNowBlock(NodeType... nodeType) throws IllegalException;
 
-  BlockExtention getBlockByNum(long blockNum) throws IllegalException;
+  BlockExtention getBlockByNum(long blockNum, NodeType... nodeType) throws IllegalException;
 
   BlockListExtention getBlockByLatestNum(long num) throws IllegalException;
 
@@ -135,11 +135,11 @@ public interface Api {
 
   NodeList listNodes() throws IllegalException;
 
-  TransactionInfoList getTransactionInfoByBlockNum(long blockNum) throws IllegalException;
+  TransactionInfoList getTransactionInfoByBlockNum(long blockNum, NodeType... nodeType) throws IllegalException;
 
-  TransactionInfo getTransactionInfoById(String txID) throws IllegalException;
+  TransactionInfo getTransactionInfoById(String txID, NodeType... nodeType) throws IllegalException;
 
-  Transaction getTransactionById(String txID) throws IllegalException;
+  Transaction getTransactionById(String txID, NodeType... nodeType) throws IllegalException;
 
   Account getAccount(String address, NodeType... nodeType);
 

@@ -238,6 +238,7 @@ service WalletSolidity {
   rpc GetNowBlock(EmptyMessage) returns (Block) {}
   rpc GetNowBlock2(EmptyMessage) returns (BlockExtention) {}
   rpc GetBlockByNum (NumberMessage) returns (Block) {}
+  rpc GetBlockByNum2 (NumberMessage) returns (BlockExtention) {}
   // rpc GetBlockByLatestNum2(NumberMessage) returns (BlockListExtention) {}
 
   rpc GetTransactionById(BytesMessage) returns (Transaction) {}

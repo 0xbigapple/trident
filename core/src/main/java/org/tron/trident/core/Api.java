@@ -107,11 +107,11 @@ public interface Api {
 
   long getCanWithdrawUnfreezeAmount(String ownerAddress, long timestamp, NodeType... nodeType);
 
-  long getCanDelegatedMaxSize(String ownerAddress, int type);
+  long getCanDelegatedMaxSize(String ownerAddress, int type, NodeType... nodeType);
 
-  DelegatedResourceList getDelegatedResourceV2(String fromAddress, String toAddress);
+  DelegatedResourceList getDelegatedResourceV2(String fromAddress, String toAddress, NodeType... nodeType);
 
-  DelegatedResourceAccountIndex getDelegatedResourceAccountIndexV2(String address)
+  DelegatedResourceAccountIndex getDelegatedResourceAccountIndexV2(String address, NodeType... nodeType)
       throws IllegalException;
 
   TransactionExtention voteWitness(String ownerAddress, HashMap<String, String> votes)

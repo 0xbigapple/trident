@@ -1048,17 +1048,23 @@ public class ApiWrapper implements Api {
    *
    * @param ownerAddress owner address
    * @param type resource type, 0 is bandwidth, 1 is energy
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return the max amount of delegatable resources
    */
   @Override
-  public long getCanDelegatedMaxSize(String ownerAddress, int type) {
+  public long getCanDelegatedMaxSize(String ownerAddress, int type, NodeType... nodeType) {
     ByteString rawFrom = parseAddress(ownerAddress);
-    GrpcAPI.CanDelegatedMaxSizeRequestMessage getAvailableUnfreezeCountRequestMessage =
+    GrpcAPI.CanDelegatedMaxSizeRequestMessage request =
         GrpcAPI.CanDelegatedMaxSizeRequestMessage.newBuilder()
             .setOwnerAddress(rawFrom)
             .setType(type)
             .build();
     GrpcAPI.CanDelegatedMaxSizeResponseMessage responseMessage =
-        blockingStub.getCanDelegatedMaxSize(getAvailableUnfreezeCountRequestMessage);
+        useSolidityNode(nodeType)
+            ? blockingStubSolidity.getCanDelegatedMaxSize(request)
+            : blockingStub.getCanDelegatedMaxSize(request);
 
     return responseMessage.getMaxSize();
   }
@@ -1069,37 +1075,49 @@ public class ApiWrapper implements Api {
    *
    * @param fromAddress from address
    * @param toAddress to address
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return DelegatedResourceList
    */
   @Override
-  public DelegatedResourceList getDelegatedResourceV2(String fromAddress, String toAddress) {
+  public DelegatedResourceList getDelegatedResourceV2(
+      String fromAddress, String toAddress, NodeType... nodeType) {
+
     ByteString rawFrom = parseAddress(fromAddress);
     ByteString rawTo = parseAddress(toAddress);
-    DelegatedResourceMessage delegatedResourceMessage =
+    DelegatedResourceMessage request =
         DelegatedResourceMessage.newBuilder()
             .setFromAddress(rawFrom)
             .setToAddress(rawTo)
             .build();
-    return blockingStub.getDelegatedResourceV2(delegatedResourceMessage);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getDelegatedResourceV2(request)
+        : blockingStub.getDelegatedResourceV2(request);
   }
 
   /**
    * Stake2.0 API
-   * query the resource delegation index by an account.
+   * query the delegated resource index of an account.
    *
-   * @param address address
+   * @param address owner address
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return DelegatedResourceAccountIndex
-   * @throws IllegalException if fail to freeze balance
+   * @throws IllegalException if fail to get resource
    */
   @Override
-  public DelegatedResourceAccountIndex getDelegatedResourceAccountIndexV2(String address)
-      throws IllegalException {
+  public DelegatedResourceAccountIndex getDelegatedResourceAccountIndexV2(
+      String address, NodeType... nodeType) throws IllegalException {
+
     ByteString rawAddress = parseAddress(address);
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(rawAddress)
         .build();
-    return blockingStub.getDelegatedResourceAccountIndexV2(
-        request);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getDelegatedResourceAccountIndexV2(request)
+        : blockingStub.getDelegatedResourceAccountIndexV2(request);
   }
 
   /**

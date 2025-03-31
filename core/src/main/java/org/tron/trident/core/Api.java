@@ -161,9 +161,11 @@ public interface Api {
 
   ChainParameters getChainParameters() throws IllegalException;
 
-  DelegatedResourceList getDelegatedResource(String fromAddress, String toAddress);
+  DelegatedResourceList getDelegatedResource(String fromAddress,
+      String toAddress, NodeType... nodeType);
 
-  DelegatedResourceAccountIndex getDelegatedResourceAccountIndex(String address);
+  DelegatedResourceAccountIndex getDelegatedResourceAccountIndex(String address,
+      NodeType... nodeType);
 
   AssetIssueList getAssetIssueList();
 

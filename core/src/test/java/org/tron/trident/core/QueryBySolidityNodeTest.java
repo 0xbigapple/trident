@@ -61,7 +61,7 @@ class QueryBySolidityNodeTest extends BaseTest {
     DelegatedResourceAccountIndex indexSolidity = client.getDelegatedResourceAccountIndexV2(
         testAddress, NodeType.SOLIDITY_NODE);
     assertNotNull(indexSolidity);
-    assertTrue(indexSolidity.getToAccountsCount() >= 0 );
+    assertTrue(indexSolidity.getToAccountsCount() >= 0);
   }
 
   @Test
@@ -109,6 +109,22 @@ class QueryBySolidityNodeTest extends BaseTest {
     Account accountSolidity = client.getAccountById(accountId, NodeType.SOLIDITY_NODE);
     assertNotNull(accountSolidity);
     assertTrue(accountSolidity.isInitialized());
+  }
+
+  @Test
+  void testGetDelegatedResource() {
+    DelegatedResourceList resourceListSolidity = client.getDelegatedResource(
+        testAddress, testAddress, NodeType.SOLIDITY_NODE);
+    assertNotNull(resourceListSolidity);
+    assertTrue(resourceListSolidity.getDelegatedResourceCount() >= 0);
+  }
+
+  @Test
+  void testGetDelegatedResourceAccountIndex() {
+    DelegatedResourceAccountIndex indexSolidity = client.getDelegatedResourceAccountIndex(
+        testAddress, NodeType.SOLIDITY_NODE);
+    assertNotNull(indexSolidity);
+    assertTrue(indexSolidity.getToAccountsCount() >= 0);
   }
 
 }

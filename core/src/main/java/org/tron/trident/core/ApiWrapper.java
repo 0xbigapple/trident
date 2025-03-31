@@ -1498,11 +1498,14 @@ public class ApiWrapper implements Api {
    *
    * @param fromAddress energy from address, default hexString
    * @param toAddress energy delegation information, default hexString
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return DelegatedResourceList
    */
   @Override
   public DelegatedResourceList getDelegatedResource(String fromAddress,
-      String toAddress) {
+      String toAddress, NodeType... nodeType) {
 
     ByteString fromAddressBS = parseAddress(fromAddress);
     ByteString toAddressBS = parseAddress(toAddress);
@@ -1511,17 +1514,24 @@ public class ApiWrapper implements Api {
         .setFromAddress(fromAddressBS)
         .setToAddress(toAddressBS)
         .build();
-    return blockingStub.getDelegatedResource(request);
+
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getDelegatedResource(request)
+        : blockingStub.getDelegatedResource(request);
   }
 
   /**
    * Query the energy delegation by an account. i.e. list all addresses that have delegated resources to an account
    *
    * @param address address,, default hexString
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return DelegatedResourceAccountIndex
    */
   @Override
-  public DelegatedResourceAccountIndex getDelegatedResourceAccountIndex(String address) {
+  public DelegatedResourceAccountIndex getDelegatedResourceAccountIndex(String address,
+      NodeType... nodeType) {
 
     ByteString addressBS = parseAddress(address);
 
@@ -1529,8 +1539,9 @@ public class ApiWrapper implements Api {
         .setValue(addressBS)
         .build();
 
-    return blockingStub.getDelegatedResourceAccountIndex(
-        bytesMessage);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getDelegatedResourceAccountIndex(bytesMessage)
+        : blockingStub.getDelegatedResourceAccountIndex(bytesMessage);
   }
 
   /**
@@ -3134,4 +3145,5 @@ public class ApiWrapper implements Api {
     return createTransactionExtention(createSmartContract,
         ContractType.CreateSmartContract, feeLimit);
   }
+
 }

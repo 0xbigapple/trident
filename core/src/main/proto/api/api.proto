@@ -233,7 +233,7 @@ service Wallet {
 // NOTE: All other solidified APIs are useless.
 service WalletSolidity {
   rpc GetAccount(AccountAddressMessage) returns (Account) {}
-  rpc GetAccountById (Account) returns (Account) {}
+  rpc GetAccountById (AccountIdMessage) returns (Account) {}
   rpc GetBlock (BlockReq) returns (BlockExtention) {}
   rpc GetNowBlock(EmptyMessage) returns (Block) {}
   rpc GetNowBlock2(EmptyMessage) returns (BlockExtention) {}

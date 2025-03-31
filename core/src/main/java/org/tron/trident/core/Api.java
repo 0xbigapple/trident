@@ -152,7 +152,7 @@ public interface Api {
 
   long getAccountBalance(String address);
 
-  Account getAccountById(String id);
+  Account getAccountById(String id, NodeType... nodeType);
 
   Transaction setAccountId(String id, String address) throws IllegalException;
 

@@ -1,21 +1,19 @@
 package org.tron.trident.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.tron.trident.core.exceptions.IllegalException;
+import org.tron.trident.proto.Chain.Block;
 import org.tron.trident.proto.Chain.Transaction;
 import org.tron.trident.proto.Response.Account;
+import org.tron.trident.proto.Response.BlockExtention;
 import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
-import org.tron.trident.proto.Chain.Block;
-import org.tron.trident.proto.Response.BlockExtention;
-import org.tron.trident.proto.Response.TransactionInfoList;
 import org.tron.trident.proto.Response.TransactionInfo;
-import org.tron.trident.core.utils.ByteArray;
-import org.tron.trident.core.utils.Sha256Hash;
+import org.tron.trident.proto.Response.TransactionInfoList;
 
 class QueryBySolidityNodeTest extends BaseTest {
 
@@ -103,6 +101,14 @@ class QueryBySolidityNodeTest extends BaseTest {
     Transaction txnSolidity = client.getTransactionById(txId, NodeType.SOLIDITY_NODE);
     assertNotNull(txnSolidity);
     assertTrue(txnSolidity.getRawData().getTimestamp() > 0);
+  }
+
+  @Test
+  void testGetAccountById() {
+    String accountId = "test1743388741490"; //TFzqPiME2TSY9akvpPbFijt7QMrU2y2Jaz
+    Account accountSolidity = client.getAccountById(accountId, NodeType.SOLIDITY_NODE);
+    assertNotNull(accountSolidity);
+    assertTrue(accountSolidity.isInitialized());
   }
 
 }

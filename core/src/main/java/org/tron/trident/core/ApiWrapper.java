@@ -1443,12 +1443,15 @@ public class ApiWrapper implements Api {
   }
 
   @Override
-  public Account getAccountById(String id) {
+  public Account getAccountById(String id, NodeType... nodeType) {
     ByteString bsId = ByteString.copyFrom(id.getBytes());
     AccountIdMessage accountId = AccountIdMessage.newBuilder()
         .setId(bsId)
         .build();
     return blockingStub.getAccountById(accountId);
+//    return useSolidityNode(nodeType)
+//        ? blockingStubSolidity.getAccountById(accountId)
+//        : blockingStub.getAccountById(accountId);
   }
 
   @Override

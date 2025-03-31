@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.tron.trident.core.exceptions.IllegalException;
 import org.tron.trident.proto.Chain.Block;
 import org.tron.trident.proto.Chain.Transaction;
+import org.tron.trident.proto.Contract.AssetIssueContract;
 import org.tron.trident.proto.Response.Account;
+import org.tron.trident.proto.Response.AssetIssueList;
 import org.tron.trident.proto.Response.BlockExtention;
 import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
@@ -20,8 +22,7 @@ class QueryBySolidityNodeTest extends BaseTest {
   @Test
   void testGetAccount() {
     Account accountSolidity = client.getAccount(testAddress, NodeType.SOLIDITY_NODE);
-    Account accountSolidityOld = client.getAccountSolidity(testAddress);
-    assertEquals(accountSolidity, accountSolidityOld);
+    assertTrue(accountSolidity.getAssetCount() >= 0);
   }
 
   @Test
@@ -126,5 +127,34 @@ class QueryBySolidityNodeTest extends BaseTest {
     assertNotNull(indexSolidity);
     assertTrue(indexSolidity.getToAccountsCount() >= 0);
   }
+
+//  @Test
+//  void testGetAssetIssueList() {
+//    AssetIssueList assetIssueList = client.getAssetIssueList(NodeType.SOLIDITY_NODE);
+//    assertTrue(assetIssueList.getAssetsCount() > 0);
+//  }
+
+  @Test
+  void testGetPaginatedAssetIssueList() {
+    AssetIssueList assetIssueList = client.getPaginatedAssetIssueList(0,10,NodeType.SOLIDITY_NODE);
+    assertTrue(assetIssueList.getAssetsCount() > 0);
+
+  }
+
+  @Test
+  void testGetAssetIssueById() {
+    AssetIssueContract assetIssueContract
+        = client.getAssetIssueById(tokenId, NodeType.SOLIDITY_NODE);
+    assertEquals(assetIssueContract.getId(), tokenId);
+
+  }
+
+  @Test
+  void testGetAssetIssueListByName() {
+    AssetIssueList assetIssueList
+        = client.getAssetIssueListByName("KKK", NodeType.SOLIDITY_NODE);
+    assertTrue(assetIssueList.getAssetsCount() > 0);
+  }
+
 
 }

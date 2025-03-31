@@ -1720,41 +1720,57 @@ public class ApiWrapper implements Api {
 
   /**
    * List all witnesses that current API node is connected to
-   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return WitnessList
    */
   @Override
-  public WitnessList listWitnesses() {
-    return blockingStub
-        .listWitnesses(EmptyMessage.newBuilder().build());
+  public WitnessList listWitnesses(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.listWitnesses(emptyMessage)
+        : blockingStub.listWitnesses(emptyMessage);
   }
 
   /**
    * List all exchange pairs
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    *
    * @return ExchangeList
    */
   @Override
-  public ExchangeList listExchanges() {
-    return blockingStub.listExchanges(EmptyMessage.newBuilder().build());
+  public ExchangeList listExchanges(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.listExchanges(emptyMessage)
+        : blockingStub.listExchanges(emptyMessage);
   }
 
   /**
    * Query exchange pair based on id
    *
    * @param id transaction pair id
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return Exchange
    * @throws IllegalException if fail to get exchange pair
    */
   @Override
-  public Exchange getExchangeById(String id) throws IllegalException {
+  public Exchange getExchangeById(String id, NodeType... nodeType) throws IllegalException {
     ByteString bsTxId = ByteString.copyFrom(
         ByteArray.fromLong(Long.parseLong(id)));
 
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(bsTxId)
         .build();
-    Exchange exchange = blockingStub.getExchangeById(request);
+
+    Exchange exchange = useSolidityNode(nodeType)
+        ? blockingStubSolidity.getExchangeById(request)
+        : blockingStub.getExchangeById(request);
 
     if (exchange.getSerializedSize() == 0) {
       throw new IllegalException();

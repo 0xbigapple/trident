@@ -14,8 +14,11 @@ import org.tron.trident.proto.Response.AssetIssueList;
 import org.tron.trident.proto.Response.BlockExtention;
 import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
+import org.tron.trident.proto.Response.Exchange;
+import org.tron.trident.proto.Response.ExchangeList;
 import org.tron.trident.proto.Response.TransactionInfo;
 import org.tron.trident.proto.Response.TransactionInfoList;
+import org.tron.trident.proto.Response.WitnessList;
 
 class QueryBySolidityNodeTest extends BaseTest {
 
@@ -154,6 +157,24 @@ class QueryBySolidityNodeTest extends BaseTest {
     AssetIssueList assetIssueList
         = client.getAssetIssueListByName("KKK", NodeType.SOLIDITY_NODE);
     assertTrue(assetIssueList.getAssetsCount() > 0);
+  }
+
+  @Test
+  void testListWitnesses() {
+    WitnessList witnessList = client.listWitnesses(NodeType.SOLIDITY_NODE);
+    assertTrue(witnessList.getWitnessesCount() >= 0);
+  }
+
+  @Test
+  void testListExchanges() {
+    ExchangeList exchangeList = client.listExchanges(NodeType.SOLIDITY_NODE);
+    assertTrue(exchangeList.getExchangesCount() > 0);
+  }
+
+  @Test
+  void testGetExchangeById() throws IllegalException {
+    Exchange exchange = client.getExchangeById("1", NodeType.SOLIDITY_NODE);
+    assertTrue(exchange.getFirstTokenBalance() >= 0);
   }
 
 

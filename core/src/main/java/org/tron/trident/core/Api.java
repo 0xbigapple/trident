@@ -187,11 +187,11 @@ public interface Api {
   //1-17
   Proposal getProposalById(String id);
 
-  WitnessList listWitnesses();
+  WitnessList listWitnesses(NodeType... nodeType);
 
-  ExchangeList listExchanges();
+  ExchangeList listExchanges(NodeType... nodeType);
 
-  Exchange getExchangeById(String id) throws IllegalException;
+  Exchange getExchangeById(String id, NodeType... nodeType) throws IllegalException;
 
   TransactionExtention createAssetIssue(String ownerAddress, String name, String abbr,
       long totalSupply, int trxNum, int icoNum, long startTime, long endTime, String url,

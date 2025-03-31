@@ -167,17 +167,17 @@ public interface Api {
   DelegatedResourceAccountIndex getDelegatedResourceAccountIndex(String address,
       NodeType... nodeType);
 
-  AssetIssueList getAssetIssueList();
+  AssetIssueList getAssetIssueList(NodeType... nodeType);
 
-  AssetIssueList getPaginatedAssetIssueList(long offset, long limit);
+  AssetIssueList getPaginatedAssetIssueList(long offset, long limit, NodeType... nodeType);
 
   AssetIssueList getAssetIssueByAccount(String address);
 
-  AssetIssueContract getAssetIssueById(String assetId);
+  AssetIssueContract getAssetIssueById(String assetId, NodeType... nodeType);
 
-  AssetIssueContract getAssetIssueByName(String name);
+  AssetIssueContract getAssetIssueByName(String name, NodeType... nodeType);
 
-  AssetIssueList getAssetIssueListByName(String name);
+  AssetIssueList getAssetIssueListByName(String name, NodeType... nodeType);
 
   TransactionExtention participateAssetIssue(String toAddress, String ownerAddress,
       String assertName, long amount) throws IllegalException;

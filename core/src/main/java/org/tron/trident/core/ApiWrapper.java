@@ -1546,13 +1546,18 @@ public class ApiWrapper implements Api {
 
   /**
    * Query the list of all the TRC10 tokens
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    *
    * @return AssetIssueList
    */
   @Override
-  public AssetIssueList getAssetIssueList() {
-    return blockingStub.getAssetIssueList(
-        EmptyMessage.newBuilder().build());
+  public AssetIssueList getAssetIssueList(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getAssetIssueList(emptyMessage)
+        : blockingStub.getAssetIssueList(emptyMessage);
   }
 
   /**
@@ -1560,16 +1565,21 @@ public class ApiWrapper implements Api {
    *
    * @param offset the index of the start token
    * @param limit the amount of tokens per page
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return AssetIssueList, a list of Tokens that succeed the Token located at offset
    */
   @Override
-  public AssetIssueList getPaginatedAssetIssueList(long offset, long limit) {
+  public AssetIssueList getPaginatedAssetIssueList(long offset, long limit, NodeType... nodeType) {
     PaginatedMessage pageMessage = PaginatedMessage.newBuilder()
         .setOffset(offset)
         .setLimit(limit)
         .build();
 
-    return blockingStub.getPaginatedAssetIssueList(pageMessage);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getPaginatedAssetIssueList(pageMessage)
+        : blockingStub.getPaginatedAssetIssueList(pageMessage);
   }
 
   /**
@@ -1592,48 +1602,62 @@ public class ApiWrapper implements Api {
    * Query a token by token id
    *
    * @param assetId the ID of the TRC10 token
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return AssetIssueContract, the token object, which contains the token name
    */
   @Override
-  public AssetIssueContract getAssetIssueById(String assetId) {
+  public AssetIssueContract getAssetIssueById(String assetId, NodeType... nodeType) {
     ByteString assetIdBs = ByteString.copyFrom(assetId.getBytes());
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(assetIdBs)
         .build();
-
-    return blockingStub.getAssetIssueById(request);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getAssetIssueById(request)
+        : blockingStub.getAssetIssueById(request);
   }
 
   /**
    * Query a token by token name
    *
    * @param name the name of the TRC10 token
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return AssetIssueContract, the token object, which contains the token name
    */
   @Override
-  public AssetIssueContract getAssetIssueByName(String name) {
+  public AssetIssueContract getAssetIssueByName(String name, NodeType... nodeType) {
     ByteString assetNameBs = ByteString.copyFrom(name.getBytes());
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(assetNameBs)
         .build();
 
-    return blockingStub.getAssetIssueByName(request);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getAssetIssueByName(request)
+        : blockingStub.getAssetIssueByName(request);
   }
 
   /**
    * Query the list of all the TRC10 tokens by token name
    *
    * @param name the name of the TRC10 token
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return AssetIssueList
    */
   @Override
-  public AssetIssueList getAssetIssueListByName(String name) {
+  public AssetIssueList getAssetIssueListByName(String name, NodeType... nodeType) {
     ByteString assetNameBs = ByteString.copyFrom(name.getBytes());
     BytesMessage request = BytesMessage.newBuilder()
         .setValue(assetNameBs)
         .build();
 
-    return blockingStub.getAssetIssueListByName(request);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getAssetIssueListByName(request)
+        : blockingStub.getAssetIssueListByName(request);
   }
 
   /**

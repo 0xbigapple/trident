@@ -29,7 +29,8 @@ public class AccountTest extends BaseTest {
   @Test
   void genAccount() throws IllegalException, InterruptedException {
     account = ApiWrapper.generateAddress();
-    TransactionExtention transaction = client.transfer(testAddress, account.toBase58CheckAddress(), 10_000_000);
+    TransactionExtention transaction
+        = client.transfer(testAddress, account.toBase58CheckAddress(), 10_000_000);
     Transaction signTransaction = client.signTransaction(transaction);
     String txId = client.broadcastTransaction(signTransaction);
 

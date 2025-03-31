@@ -62,7 +62,6 @@ public class AccountTest extends BaseTest {
   @Test
   void getAccountById() {
     Account account1 = client.getAccountById(accountId);
-    System.out.println(accountId);
     assertEquals(account1.getAccountId(), ByteString.copyFrom(accountId.getBytes()));
   }
 

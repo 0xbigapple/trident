@@ -1448,10 +1448,9 @@ public class ApiWrapper implements Api {
     AccountIdMessage accountId = AccountIdMessage.newBuilder()
         .setId(bsId)
         .build();
-    return blockingStub.getAccountById(accountId);
-//    return useSolidityNode(nodeType)
-//        ? blockingStubSolidity.getAccountById(accountId)
-//        : blockingStub.getAccountById(accountId);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getAccountById(accountId)
+        : blockingStub.getAccountById(accountId);
   }
 
   @Override

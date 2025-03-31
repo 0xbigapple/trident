@@ -17,21 +17,21 @@ public class TokenValidatorTest {
     try {
       TokenValidator.validateTokenId(" ");
 
-    } catch(Exception e){
+    } catch (Exception e) {
       assertEquals("Token ID must be a valid number", e.getMessage());
     }
 
     try {
       TokenValidator.validateTokenId("abc");
 
-    } catch(Exception e){
+    } catch (Exception e) {
       assertEquals("Token ID must be a valid number", e.getMessage());
     }
 
     try {
       TokenValidator.validateTokenId("-123");
 
-    } catch(Exception e){
+    } catch (Exception e) {
       assertEquals("Token ID must be a valid number", e.getMessage());
     }
 

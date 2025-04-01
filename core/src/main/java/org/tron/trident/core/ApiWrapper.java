@@ -2846,32 +2846,42 @@ public class ApiWrapper implements Api {
    * getMarketOrderByAccount
    *
    * @param address account address
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return MarketOrderList
    */
   @Override
-  public MarketOrderList getMarketOrderByAccount(String address) {
+  public MarketOrderList getMarketOrderByAccount(String address, NodeType... nodeType) {
     ByteString rawAddress = parseAddress(address);
     BytesMessage param =
         BytesMessage.newBuilder()
             .setValue(rawAddress)
             .build();
-    return blockingStub.getMarketOrderByAccount(param);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getMarketOrderByAccount(param)
+        : blockingStub.getMarketOrderByAccount(param);
   }
 
   /**
    * getMarketOrderById
    *
    * @param txn market transactionId
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return MarketOrder
    */
   @Override
-  public MarketOrder getMarketOrderById(String txn) {
+  public MarketOrder getMarketOrderById(String txn, NodeType... nodeType) {
     ByteString rawAddress = ByteString.copyFrom(ByteArray.fromHexString(txn));
     BytesMessage param =
         BytesMessage.newBuilder()
             .setValue(rawAddress)
             .build();
-    return blockingStub.getMarketOrderById(param);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getMarketOrderById(param)
+        : blockingStub.getMarketOrderById(param);
   }
 
   /**
@@ -2879,26 +2889,36 @@ public class ApiWrapper implements Api {
    *
    * @param sellTokenId market sell token id
    * @param buyTokenId market buy token id
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return MarketOrderList
    */
   @Override
-  public MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId) {
+  public MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId, NodeType... nodeType) {
     MarketOrderPair param =
         MarketOrderPair.newBuilder()
             .setSellTokenId(ByteString.copyFrom(sellTokenId.getBytes()))
             .setBuyTokenId(ByteString.copyFrom(buyTokenId.getBytes()))
             .build();
-    return blockingStub.getMarketOrderListByPair(param);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getMarketOrderListByPair(param)
+        : blockingStub.getMarketOrderListByPair(param);
   }
 
   /**
    * getMarketPairList
-   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return MarketOrderPairList
    */
   @Override
-  public MarketOrderPairList getMarketPairList() {
-    return blockingStub.getMarketPairList(EmptyMessage.getDefaultInstance());
+  public MarketOrderPairList getMarketPairList(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getMarketPairList(emptyMessage)
+        : blockingStub.getMarketPairList(emptyMessage);
   }
 
   /**
@@ -2906,16 +2926,22 @@ public class ApiWrapper implements Api {
    *
    * @param sellTokenId market sell token id
    * @param buyTokenId market buy token id
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return MarketPriceList
    */
   @Override
-  public MarketPriceList getMarketPriceByPair(String sellTokenId, String buyTokenId) {
+  public MarketPriceList getMarketPriceByPair(String sellTokenId, String buyTokenId, NodeType... nodeType) {
     MarketOrderPair param =
         MarketOrderPair.newBuilder()
             .setSellTokenId(ByteString.copyFrom(sellTokenId.getBytes()))
             .setBuyTokenId(ByteString.copyFrom(buyTokenId.getBytes()))
             .build();
-    return blockingStub.getMarketPriceByPair(param);
+
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getMarketPriceByPair(param)
+        : blockingStub.getMarketPriceByPair(param);
   }
 
   /**

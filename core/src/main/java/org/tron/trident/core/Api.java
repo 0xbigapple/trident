@@ -326,15 +326,15 @@ public interface Api {
 
   SmartContractDataWrapper getContractInfo(String contractAddr);
 
-  MarketOrderList getMarketOrderByAccount(String account);
+  MarketOrderList getMarketOrderByAccount(String account, NodeType... nodeType);
 
-  MarketOrder getMarketOrderById(String txn);
+  MarketOrder getMarketOrderById(String txn, NodeType... nodeType);
 
-  MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId);
+  MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId, NodeType... nodeType);
 
-  MarketOrderPairList getMarketPairList();
+  MarketOrderPairList getMarketPairList(NodeType... nodeType);
 
-  MarketPriceList getMarketPriceByPair(String sellTokenId, String buyTokenId);
+  MarketPriceList getMarketPriceByPair(String sellTokenId, String buyTokenId, NodeType... nodeType);
 
   TransactionExtention exchangeCreate(String ownerAddress, String firstToken, long firstBalance,
       String secondToken, long secondBalance) throws IllegalException;

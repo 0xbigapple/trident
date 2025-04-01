@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.protobuf.ByteString;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import org.tron.trident.abi.datatypes.Bool;
 import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.generated.Uint256;
 import org.tron.trident.core.exceptions.IllegalException;
+import org.tron.trident.core.utils.ByteArray;
 import org.tron.trident.proto.Chain.Block;
 import org.tron.trident.proto.Chain.Transaction;
 import org.tron.trident.proto.Contract.AssetIssueContract;
@@ -25,6 +27,10 @@ import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
 import org.tron.trident.proto.Response.Exchange;
 import org.tron.trident.proto.Response.ExchangeList;
+import org.tron.trident.proto.Response.MarketOrder;
+import org.tron.trident.proto.Response.MarketOrderList;
+import org.tron.trident.proto.Response.MarketOrderPairList;
+import org.tron.trident.proto.Response.MarketPriceList;
 import org.tron.trident.proto.Response.PricesResponseMessage;
 import org.tron.trident.proto.Response.TransactionExtention;
 import org.tron.trident.proto.Response.TransactionInfo;
@@ -272,6 +278,46 @@ class QueryBySolidityNodeTest extends BaseTest {
 
     blockExtention = client.getBlock(false, NodeType.SOLIDITY_NODE);
     assertEquals(0, blockExtention.getTransactionsList().size());
+  }
+
+  @Test
+  void testGetMarketOrderByAccount() {
+    String account = "TEqZpKG8cLquDHNVGcHXJhEQMoWE653nBH"; //nile
+    MarketOrderList marketOrderList
+        = client.getMarketOrderByAccount(account, NodeType.SOLIDITY_NODE);
+    assertTrue(marketOrderList.getOrdersCount() > 0);
+  }
+
+  @Test
+  void testGetMarketOrderListByPair() {
+    MarketOrderList marketOrderList
+        = client.getMarketOrderListByPair("1000012", "_", NodeType.SOLIDITY_NODE);
+    assertTrue(marketOrderList.getOrdersCount() > 0);
+  }
+
+  @Test
+  void testGetMarketOrderById() {
+    String orderId = "4503c83790b5f739b58b94c28f1e98357c3dc98f6b6877c8ee792d3ea3a4465a";
+    String ownerAddress = "TEqZpKG8cLquDHNVGcHXJhEQMoWE653nBH";
+    MarketOrder marketOrder = client.getMarketOrderById(orderId, NodeType.SOLIDITY_NODE);
+    assertEquals(marketOrder.getOrderId(), ByteString.copyFrom(ByteArray.fromHexString(orderId)));
+    assertEquals(marketOrder.getOwnerAddress(), ApiWrapper.parseAddress(ownerAddress));
+    assertEquals(marketOrder.getBuyTokenId(), ByteString.copyFrom("_".getBytes()));
+    assertEquals(marketOrder.getSellTokenId(), ByteString.copyFrom("1000012".getBytes()));
+  }
+
+  @Test
+  void testGetMarketPairList() {
+    MarketOrderPairList marketOrderPairList = client.getMarketPairList(NodeType.SOLIDITY_NODE);
+    assertTrue(marketOrderPairList.getOrderPairCount() > 0);
+  }
+
+  @Test
+  void testGetMarketPriceByPair() {
+    MarketPriceList marketPriceList
+        = client.getMarketPriceByPair("1000012", "_", NodeType.SOLIDITY_NODE);
+    assertTrue(marketPriceList.getPricesCount() > 0);
+    assertTrue(marketPriceList.getPrices(0).getBuyTokenQuantity() >= 0);
   }
 
 }

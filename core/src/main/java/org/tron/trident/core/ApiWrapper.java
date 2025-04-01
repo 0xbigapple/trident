@@ -2064,14 +2064,25 @@ public class ApiWrapper implements Api {
         Transaction.Contract.ContractType.UpdateBrokerageContract);
   }
 
+  /**
+   * Query the ratio of brokerage of the witness.
+   *
+   * @param address the address of the witness's account
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return the ratio of brokerage
+   */
   @Override
-  public long getBrokerageInfo(String address) {
+  public long getBrokerageInfo(String address, NodeType... nodeType) {
     ByteString sr = parseAddress(address);
     BytesMessage param =
         BytesMessage.newBuilder()
             .setValue(sr)
             .build();
-    return blockingStub.getBrokerageInfo(param).getNum();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getBrokerageInfo(param).getNum()
+        : blockingStub.getBrokerageInfo(param).getNum();
   }
 
   /**
@@ -2287,13 +2298,18 @@ public class ApiWrapper implements Api {
   /**
    * GetBurnTRX
    * Query the amount of TRX burned due to on-chain transaction fees since No. 54 Committee Proposal took effect
-   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return burn trx amount
    */
   @Override
-  public long getBurnTRX() {
-    GrpcAPI.NumberMessage numberMessage = blockingStub.getBurnTrx(
-        EmptyMessage.getDefaultInstance());
+  public long getBurnTRX(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    GrpcAPI.NumberMessage numberMessage = useSolidityNode(nodeType)
+        ? blockingStubSolidity.getBurnTrx(emptyMessage)
+        : blockingStub.getBurnTrx(emptyMessage);
+
     return numberMessage.getNum();
   }
 
@@ -2518,15 +2534,20 @@ public class ApiWrapper implements Api {
    * format, otherwise use hex format. For constant call you can use the all-zero address.
    * @param contractAddress Smart contract address.
    * @param function contract function
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return EstimateEnergyMessage. Estimated energy to run the contract
    */
   @Override
   public Response.EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
-      Function function) {
+      Function function, NodeType... nodeType) {
     String encodedHex = FunctionEncoder.encode(function);
     TriggerSmartContract trigger = buildTrigger(ownerAddress, contractAddress, encodedHex, 0L, 0L,
         null);
-    return blockingStub.estimateEnergy(trigger);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.estimateEnergy(trigger)
+        : blockingStub.estimateEnergy(trigger);
   }
 
   /**
@@ -2542,14 +2563,19 @@ public class ApiWrapper implements Api {
    * @param callValue call Value. If TRX not used, use 0.
    * @param tokenValue token Value, If token10 not used, use 0.
    * @param tokenId token10 ID, If token10 not used, use null.
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return EstimateEnergyMessage. Estimated energy to run the contract
    */
   @Override
-  public Response.EstimateEnergyMessage estimateEnergy(String ownerAddress,
-      String contractAddress, String callData, long callValue, long tokenValue, String tokenId) {
+  public Response.EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
+      String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType) {
     TriggerSmartContract trigger = buildTrigger(ownerAddress, contractAddress, callData, callValue,
         tokenValue, tokenId);
-    return blockingStub.estimateEnergy(trigger);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.estimateEnergy(trigger)
+        : blockingStub.estimateEnergy(trigger);
   }
 
   /**
@@ -2565,7 +2591,7 @@ public class ApiWrapper implements Api {
    * @param callData The data passed along with a transaction that allows us to interact with smart contracts.
    * @return EstimateEnergyMessage. Estimated energy to run the contract
    * @deprecated Since 0.9.2, scheduled for removal in future versions.
-   * Use {@link #estimateEnergy(String, String, String, long, long, String)} instead.
+   * Use {@link #estimateEnergy(String, String, String, long, long, String, NodeType... )} instead.
    */
   @Override
   public Response.EstimateEnergyMessage estimateEnergyV2(String ownerAddress,

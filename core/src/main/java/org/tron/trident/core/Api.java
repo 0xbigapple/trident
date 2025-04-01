@@ -232,7 +232,7 @@ public interface Api {
 
   TransactionExtention updateBrokerage(String address, int brokerage) throws IllegalException;
 
-  long getBrokerageInfo(String address);
+  long getBrokerageInfo(String address, NodeType... nodeType);
 
   Contract getContract(String contractAddress);
 
@@ -250,7 +250,7 @@ public interface Api {
 
   BlockBalanceTrace getBlockBalance(String blockId, long blockNum);
 
-  long getBurnTRX();
+  long getBurnTRX(NodeType... nodeType);
 
   TransactionExtention createWitness(String ownerAddress, String url) throws IllegalException;
 
@@ -277,10 +277,10 @@ public interface Api {
   Block getBlockById(String blockID);
 
   Response.EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
-      Function function);
+      Function function, NodeType... nodeType);
 
-  Response.EstimateEnergyMessage estimateEnergy(String ownerAddress,
-      String contractAddress, String callData, long callValue, long tokenValue, String tokenId);
+  Response.EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
+      String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType);
 
   @Deprecated
   Response.EstimateEnergyMessage estimateEnergyV2(String ownerAddress, String contractAddress,

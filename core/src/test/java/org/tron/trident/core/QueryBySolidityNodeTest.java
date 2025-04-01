@@ -18,7 +18,9 @@ import org.tron.trident.proto.Response.Exchange;
 import org.tron.trident.proto.Response.ExchangeList;
 import org.tron.trident.proto.Response.TransactionInfo;
 import org.tron.trident.proto.Response.TransactionInfoList;
+import org.tron.trident.proto.Response.Witness;
 import org.tron.trident.proto.Response.WitnessList;
+import org.tron.trident.utils.Base58Check;
 
 class QueryBySolidityNodeTest extends BaseTest {
 
@@ -176,6 +178,23 @@ class QueryBySolidityNodeTest extends BaseTest {
     Exchange exchange = client.getExchangeById("1", NodeType.SOLIDITY_NODE);
     assertTrue(exchange.getFirstTokenBalance() >= 0);
   }
+
+  @Test
+  void testGetBrokerageInfo() {
+    WitnessList witnessList = client.listWitnesses(NodeType.SOLIDITY_NODE);
+    Witness witness = witnessList.getWitnessesList().get(0);
+    String address = Base58Check.bytesToBase58(witness.getAddress().toByteArray());
+    long ratio = client.getBrokerageInfo(address, NodeType.SOLIDITY_NODE);
+    assertTrue(ratio >= 0);
+  }
+
+  @Test
+  void testGetBurnTRX() {
+    long num = client.getBurnTRX(NodeType.SOLIDITY_NODE);
+    assertTrue(num > 0);
+  }
+
+
 
 
 }

@@ -4,7 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
+import org.tron.trident.abi.FunctionEncoder;
+import org.tron.trident.abi.TypeReference;
+import org.tron.trident.abi.datatypes.Address;
+import org.tron.trident.abi.datatypes.Bool;
+import org.tron.trident.abi.datatypes.Function;
+import org.tron.trident.abi.datatypes.generated.Uint256;
 import org.tron.trident.core.exceptions.IllegalException;
 import org.tron.trident.proto.Chain.Block;
 import org.tron.trident.proto.Chain.Transaction;
@@ -16,6 +25,7 @@ import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
 import org.tron.trident.proto.Response.Exchange;
 import org.tron.trident.proto.Response.ExchangeList;
+import org.tron.trident.proto.Response.TransactionExtention;
 import org.tron.trident.proto.Response.TransactionInfo;
 import org.tron.trident.proto.Response.TransactionInfoList;
 import org.tron.trident.proto.Response.Witness;
@@ -194,6 +204,48 @@ class QueryBySolidityNodeTest extends BaseTest {
     assertTrue(num > 0);
   }
 
+  @Test
+  void testTriggerConstantContract() {
+    // transfer(address,uint256) returns (bool)
+    String usdtAddr = "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"; //nile
+    String fromAddr = client.keyPair.toBase58CheckAddress();
+    String toAddress = "TVjsyZ7fYF3qLF6BQgPmTEZy1xrNNyVAAA";
+    Function trc20Transfer = new Function("transfer",
+        Arrays.asList(new Address(toAddress),
+            new Uint256(BigInteger.valueOf(1).multiply(BigInteger.valueOf(10).pow(6)))),
+        Collections.singletonList(new TypeReference<Bool>() {
+        }));
+    String encodedHex = FunctionEncoder.encode(trc20Transfer);
+    try {
+      client.triggerConstantContract(fromAddr, usdtAddr,
+          encodedHex, -1L, 0L, null, NodeType.SOLIDITY_NODE);
+      assert false;
+    } catch (Exception e) {
+      assert e instanceof IllegalArgumentException;
+    }
+    try {
+      client.triggerConstantContract(fromAddr, usdtAddr,
+          encodedHex, 0L, 0L, "999999", NodeType.SOLIDITY_NODE);
+      assert false;
+    } catch (Exception e) {
+      assert e instanceof IllegalArgumentException;
+    }
+    TransactionExtention transactionExtention = client.triggerConstantContract(fromAddr, usdtAddr,
+        encodedHex, 0L, 0L, null, NodeType.SOLIDITY_NODE);
+    long energy = transactionExtention.getEnergyUsed();
+    assertTrue(energy > 0);
+
+    TransactionExtention transactionExtention2 = client.triggerConstantContract(fromAddr, usdtAddr,
+        trc20Transfer, NodeType.SOLIDITY_NODE);
+    long energy2 = transactionExtention2.getEnergyUsed();
+    assertTrue(energy2 > 0);
+
+    TransactionExtention transactionExtention3 = client.triggerConstantContract(fromAddr, usdtAddr,
+        encodedHex, NodeType.SOLIDITY_NODE);
+    long energy3 = transactionExtention3.getEnergyUsed();
+    assertTrue(energy3 > 0);
+
+  }
 
 
 

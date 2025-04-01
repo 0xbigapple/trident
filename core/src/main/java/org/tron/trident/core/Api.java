@@ -293,13 +293,13 @@ public interface Api {
   TransactionExtention constantCallV2(String ownerAddress, String contractAddress, String callData);
 
   TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
-      Function function);
+      Function function, NodeType... nodeType);
 
   TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
-      String callData);
+      String callData, NodeType... nodeType);
 
   TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
-      String callData, long callValue, long tokenValue, String tokenId);
+      String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType);
 
   Response.PricesResponseMessage getBandwidthPrices();
 

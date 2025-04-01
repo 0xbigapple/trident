@@ -2151,7 +2151,7 @@ public class ApiWrapper implements Api {
    * @param function contract function.
    * @return TransactionExtention.
    * @deprecated Since 0.9.2, scheduled for removal in future versions.
-   * Use {@link #triggerConstantContract(String, String, Function)} instead.
+   * Use {@link #triggerConstantContract(String, String, Function, NodeType...)} instead.
    */
   @Deprecated
   @Override
@@ -2168,7 +2168,7 @@ public class ApiWrapper implements Api {
    * @param callData The data passed along with a transaction that allows us to interact with smart contracts.
    * @return TransactionExtention.
    * @deprecated Since 0.9.2, scheduled for removal in future versions.
-   * Use {@link #triggerConstantContract(String, String, String)} instead.
+   * Use {@link #triggerConstantContract(String, String, String, NodeType...)} instead.
    */
   @Deprecated
   @Override
@@ -2178,22 +2178,22 @@ public class ApiWrapper implements Api {
   }
 
   /**
-   * @see #triggerConstantContract(String, String, String)
+   * @see #triggerConstantContract(String, String, String, NodeType...)
    */
   @Override
   public TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
-      Function function) {
+      Function function, NodeType... nodeType) {
     String callData = FunctionEncoder.encode(function);
-    return triggerConstantContract(ownerAddress, contractAddress, callData);
+    return triggerConstantContract(ownerAddress, contractAddress, callData, nodeType);
   }
 
   /**
-   * @see #triggerConstantContract(String, String, String, long, long, String)
+   * @see #triggerConstantContract(String, String, String, long, long, String, NodeType...)
    */
   @Override
   public TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
-      String callData) {
-    return triggerConstantContract(ownerAddress, contractAddress, callData, 0L, 0L, null);
+      String callData, NodeType... nodeType) {
+    return triggerConstantContract(ownerAddress, contractAddress, callData, 0L, 0L, null, nodeType);
   }
 
   /**
@@ -2206,14 +2206,19 @@ public class ApiWrapper implements Api {
    * @param callValue call Value. If TRX not used, use 0.
    * @param tokenValue token Value, If token10 not used, use 0.
    * @param tokenId token10 ID, If token10 not used, use null.
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return TransactionExtention.
    */
   @Override
   public TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
-      String callData, long callValue, long tokenValue, String tokenId) {
+      String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType) {
     TriggerSmartContract trigger = buildTrigger(ownerAddress, contractAddress, callData, callValue,
         tokenValue, tokenId);
-    return blockingStub.triggerConstantContract(trigger);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.triggerConstantContract(trigger)
+        : blockingStub.triggerConstantContract(trigger);
   }
 
   /**
@@ -2224,7 +2229,7 @@ public class ApiWrapper implements Api {
    * @param function contract function
    * @return transaction builder. Users may set other fields, e.g. feeLimit
    * @deprecated Since 0.9.2, scheduled for removal in future versions.
-   * Use {@link #triggerConstantContract(String, String, Function)} instead.
+   * Use {@link #triggerConstantContract(String, String, Function, NodeType...)} instead.
    */
   @Deprecated
   @Override
@@ -2242,7 +2247,7 @@ public class ApiWrapper implements Api {
    * @param callData The data passed along with a transaction that allows us to interact with smart contracts.
    * @return transaction builder. TransactionExtention detail.
    * @deprecated Since 0.9.2, scheduled for removal in future versions.
-   * Use {@link #triggerConstantContract(String, String, String)} instead.
+   * Use {@link #triggerConstantContract(String, String, String, NodeType...)} instead.
    */
   @Deprecated
   @Override

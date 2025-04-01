@@ -301,9 +301,9 @@ public interface Api {
   TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
       String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType);
 
-  Response.PricesResponseMessage getBandwidthPrices();
+  Response.PricesResponseMessage getBandwidthPrices(NodeType... nodeType);
 
-  Response.PricesResponseMessage getEnergyPrices();
+  Response.PricesResponseMessage getEnergyPrices(NodeType... nodeType);
 
   Response.PricesResponseMessage getMemoFee();
 

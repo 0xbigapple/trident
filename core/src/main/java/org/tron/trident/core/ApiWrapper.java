@@ -2630,30 +2630,40 @@ public class ApiWrapper implements Api {
   /**
    * GetBandwidthPrices
    * Query historical bandwidth unit price.
-   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return prices string: All historical bandwidth unit price information.
    * Each unit price change is separated by a comma.
    * Before the colon is the millisecond timestamp,
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getBandwidthPrices() {
-    return blockingStub.getBandwidthPrices(EmptyMessage.getDefaultInstance());
+  public Response.PricesResponseMessage getBandwidthPrices(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getBandwidthPrices(emptyMessage)
+        : blockingStub.getBandwidthPrices(emptyMessage);
   }
 
 
   /**
    * GetEnergyPrices
    * Query historical energy unit price.
-   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return prices string: All historical bandwidth unit price information.
    * Each unit price change is separated by a comma.
    * Before the colon is the millisecond timestamp,
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getEnergyPrices() {
-    return blockingStub.getEnergyPrices(EmptyMessage.getDefaultInstance());
+  public Response.PricesResponseMessage getEnergyPrices(NodeType... nodeType) {
+    EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getEnergyPrices(emptyMessage)
+        : blockingStub.getEnergyPrices(emptyMessage);
   }
 
 

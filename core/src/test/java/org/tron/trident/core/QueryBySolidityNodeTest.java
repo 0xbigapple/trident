@@ -25,6 +25,7 @@ import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
 import org.tron.trident.proto.Response.Exchange;
 import org.tron.trident.proto.Response.ExchangeList;
+import org.tron.trident.proto.Response.PricesResponseMessage;
 import org.tron.trident.proto.Response.TransactionExtention;
 import org.tron.trident.proto.Response.TransactionInfo;
 import org.tron.trident.proto.Response.TransactionInfoList;
@@ -247,6 +248,18 @@ class QueryBySolidityNodeTest extends BaseTest {
 
   }
 
+  @Test
+  void testGetBandwidthPrices() {
+    PricesResponseMessage pricesResponseMessage = client.getBandwidthPrices(NodeType.SOLIDITY_NODE);
+    assertNotNull(pricesResponseMessage);
+    assertNotNull(pricesResponseMessage.getPrices());
+  }
 
+  @Test
+  void testGetEnergyPrices() {
+    PricesResponseMessage pricesResponseMessage = client.getEnergyPrices(NodeType.SOLIDITY_NODE);
+    assertNotNull(pricesResponseMessage);
+    assertNotNull(pricesResponseMessage.getPrices());
+  }
 
 }

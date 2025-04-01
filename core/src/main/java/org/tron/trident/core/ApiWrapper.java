@@ -2768,28 +2768,39 @@ public class ApiWrapper implements Api {
    *
    * @param blockIDOrNum block Id or block num
    * @param detail if false, no transactions are contained.
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return BlockExtention
    */
   @Override
-  public BlockExtention getBlock(String blockIDOrNum, boolean detail) {
+  public BlockExtention getBlock(String blockIDOrNum, boolean detail, NodeType... nodeType) {
     BlockReq blockReq = BlockReq.newBuilder()
         .setIdOrNum(blockIDOrNum)
         .setDetail(detail)
         .build();
-    return blockingStub.getBlock(blockReq);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getBlock(blockReq)
+        : blockingStub.getBlock(blockReq);
   }
 
   /**
    * get latest block extension
    *
    * @param detail specify whether to contains transaction in BlockExtention
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return BlockExtention
    */
   @Override
-  public BlockExtention getBlock(boolean detail) {
+  public BlockExtention getBlock(boolean detail, NodeType... nodeType) {
     BlockReq blockReq = BlockReq.newBuilder()
         .setDetail(detail)
         .build();
-    return blockingStub.getBlock(blockReq);
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getBlock(blockReq)
+        : blockingStub.getBlock(blockReq);
   }
 
   /**

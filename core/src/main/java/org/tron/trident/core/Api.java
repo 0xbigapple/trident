@@ -318,9 +318,9 @@ public interface Api {
 
   ProposalList getPaginatedProposalList(long offset, long limit);
 
-  BlockExtention getBlock(String blockIDOrNum, boolean detail);
+  BlockExtention getBlock(String blockIDOrNum, boolean detail, NodeType... nodeType);
 
-  BlockExtention getBlock(boolean detail);
+  BlockExtention getBlock(boolean detail, NodeType... nodeType);
 
   Block getBlockByIdOrNum(String blockIDOrNum);
 

@@ -262,4 +262,16 @@ class QueryBySolidityNodeTest extends BaseTest {
     assertNotNull(pricesResponseMessage.getPrices());
   }
 
+  @Test
+  void testGetBlock() {
+    BlockExtention blockExtention = client.getBlock("53506161", true, NodeType.SOLIDITY_NODE);
+    assertEquals(1, blockExtention.getTransactionsList().size());
+
+    blockExtention = client.getBlock("53506161", false, NodeType.SOLIDITY_NODE);
+    assertEquals(0, blockExtention.getTransactionsList().size());
+
+    blockExtention = client.getBlock(false, NodeType.SOLIDITY_NODE);
+    assertEquals(0, blockExtention.getTransactionsList().size());
+  }
+
 }

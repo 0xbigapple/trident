@@ -320,4 +320,9 @@ class QueryBySolidityNodeTest extends BaseTest {
     assertTrue(marketPriceList.getPrices(0).getBuyTokenQuantity() >= 0);
   }
 
+  @Test
+  void testGetTransactionCountByBlockNum() {
+    assertTrue(client.getTransactionCountByBlockNum(53598255, NodeType.SOLIDITY_NODE) > 0);
+  }
+
 }

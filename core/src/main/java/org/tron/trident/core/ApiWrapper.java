@@ -3045,12 +3045,17 @@ public class ApiWrapper implements Api {
    * getTransactionCountByBlockNum
    *
    * @param blockNum block num
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
    * @return the transaction count in block
    */
   @Override
-  public long getTransactionCountByBlockNum(long blockNum) {
+  public long getTransactionCountByBlockNum(long blockNum, NodeType... nodeType) {
     NumberMessage message = NumberMessage.newBuilder().setNum(blockNum).build();
-    return blockingStub.getTransactionCountByBlockNum(message).getNum();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getTransactionCountByBlockNum(message).getNum()
+        : blockingStub.getTransactionCountByBlockNum(message).getNum();
   }
 
   /**

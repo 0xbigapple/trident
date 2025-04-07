@@ -15,6 +15,7 @@ import org.tron.trident.abi.datatypes.Address;
 import org.tron.trident.abi.datatypes.Bool;
 import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.generated.Uint256;
+import org.tron.trident.api.GrpcAPI.NumberMessage;
 import org.tron.trident.core.exceptions.IllegalException;
 import org.tron.trident.core.utils.ByteArray;
 import org.tron.trident.proto.Chain.Block;
@@ -61,7 +62,8 @@ class QueryBySolidityNodeTest extends BaseTest {
 
     // Test query with timestamp
     long timestamp = System.currentTimeMillis();
-    long amountWithTimeSolidity = client.getCanWithdrawUnfreezeAmount(testAddress, timestamp, NodeType.SOLIDITY_NODE);
+    long amountWithTimeSolidity
+        = client.getCanWithdrawUnfreezeAmount(testAddress, timestamp, NodeType.SOLIDITY_NODE);
     assertTrue(amountWithTimeSolidity >= 0);
   }
 
@@ -103,7 +105,8 @@ class QueryBySolidityNodeTest extends BaseTest {
 
   @Test
   void testGetTransactionInfoByBlockNum() throws IllegalException {
-    TransactionInfoList infoListSolidity = client.getTransactionInfoByBlockNum(55157371, NodeType.SOLIDITY_NODE);
+    TransactionInfoList infoListSolidity
+        = client.getTransactionInfoByBlockNum(55157371, NodeType.SOLIDITY_NODE);
     assertNotNull(infoListSolidity);
     assertTrue(infoListSolidity.getTransactionInfoCount() > 0);
   }
@@ -323,6 +326,18 @@ class QueryBySolidityNodeTest extends BaseTest {
   @Test
   void testGetTransactionCountByBlockNum() {
     assertTrue(client.getTransactionCountByBlockNum(53598255, NodeType.SOLIDITY_NODE) > 0);
+  }
+
+  @Test
+  void testGetNowBlock2() throws IllegalException {
+    BlockExtention blockExtention = client.getNowBlock2(NodeType.SOLIDITY_NODE);
+    assertTrue(blockExtention.getBlockHeader().getRawData().getNumber() > 0);
+  }
+
+  @Test
+  void testGetRewardInfo() {
+    NumberMessage numberMessage = client.getRewardInfo(testAddress, NodeType.SOLIDITY_NODE);
+    assertTrue(numberMessage.getNum() >= 0);
   }
 
 }

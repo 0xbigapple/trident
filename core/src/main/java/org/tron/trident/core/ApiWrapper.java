@@ -25,17 +25,21 @@ import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.tron.trident.abi.FunctionEncoder;
 import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.Type;
-import org.tron.trident.api.GrpcAPI;
 import org.tron.trident.api.GrpcAPI.AccountAddressMessage;
 import org.tron.trident.api.GrpcAPI.AccountIdMessage;
 import org.tron.trident.api.GrpcAPI.BlockLimit;
 import org.tron.trident.api.GrpcAPI.BlockReq;
 import org.tron.trident.api.GrpcAPI.BytesMessage;
+import org.tron.trident.api.GrpcAPI.CanDelegatedMaxSizeRequestMessage;
+import org.tron.trident.api.GrpcAPI.CanDelegatedMaxSizeResponseMessage;
+import org.tron.trident.api.GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage;
+import org.tron.trident.api.GrpcAPI.CanWithdrawUnfreezeAmountResponseMessage;
 import org.tron.trident.api.GrpcAPI.EmptyMessage;
 import org.tron.trident.api.GrpcAPI.GetAvailableUnfreezeCountRequestMessage;
 import org.tron.trident.api.GrpcAPI.GetAvailableUnfreezeCountResponseMessage;
 import org.tron.trident.api.GrpcAPI.NumberMessage;
 import org.tron.trident.api.GrpcAPI.PaginatedMessage;
+import org.tron.trident.api.GrpcAPI.TransactionIdList;
 import org.tron.trident.api.WalletGrpc;
 import org.tron.trident.api.WalletSolidityGrpc;
 import org.tron.trident.core.contract.Contract;
@@ -112,6 +116,7 @@ import org.tron.trident.proto.Response.MarketOrderPairList;
 import org.tron.trident.proto.Response.MarketPriceList;
 import org.tron.trident.proto.Response.NodeInfo;
 import org.tron.trident.proto.Response.NodeList;
+import org.tron.trident.proto.Response.PricesResponseMessage;
 import org.tron.trident.proto.Response.Proposal;
 import org.tron.trident.proto.Response.ProposalList;
 import org.tron.trident.proto.Response.SmartContractDataWrapper;
@@ -1000,12 +1005,12 @@ public class ApiWrapper implements Api {
   @Override
   public long getCanWithdrawUnfreezeAmount(String ownerAddress, NodeType... nodeType) {
     ByteString rawOwner = parseAddress(ownerAddress);
-    GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage request =
-        GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage.newBuilder()
+    CanWithdrawUnfreezeAmountRequestMessage request =
+        CanWithdrawUnfreezeAmountRequestMessage.newBuilder()
             .setOwnerAddress(rawOwner)
             .build();
 
-    GrpcAPI.CanWithdrawUnfreezeAmountResponseMessage responseMessage =
+    CanWithdrawUnfreezeAmountResponseMessage responseMessage =
         useSolidityNode(nodeType)
             ? blockingStubSolidity.getCanWithdrawUnfreezeAmount(request)
             : blockingStub.getCanWithdrawUnfreezeAmount(request);
@@ -1028,13 +1033,13 @@ public class ApiWrapper implements Api {
   public long getCanWithdrawUnfreezeAmount(String ownerAddress,
       long timestamp, NodeType... nodeType) {
     ByteString rawOwner = parseAddress(ownerAddress);
-    GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage request =
-        GrpcAPI.CanWithdrawUnfreezeAmountRequestMessage.newBuilder()
+    CanWithdrawUnfreezeAmountRequestMessage request =
+        CanWithdrawUnfreezeAmountRequestMessage.newBuilder()
             .setOwnerAddress(rawOwner)
             .setTimestamp(timestamp)
             .build();
 
-    GrpcAPI.CanWithdrawUnfreezeAmountResponseMessage responseMessage =
+    CanWithdrawUnfreezeAmountResponseMessage responseMessage =
         useSolidityNode(nodeType)
             ? blockingStubSolidity.getCanWithdrawUnfreezeAmount(request)
             : blockingStub.getCanWithdrawUnfreezeAmount(request);
@@ -1056,12 +1061,12 @@ public class ApiWrapper implements Api {
   @Override
   public long getCanDelegatedMaxSize(String ownerAddress, int type, NodeType... nodeType) {
     ByteString rawFrom = parseAddress(ownerAddress);
-    GrpcAPI.CanDelegatedMaxSizeRequestMessage request =
-        GrpcAPI.CanDelegatedMaxSizeRequestMessage.newBuilder()
+    CanDelegatedMaxSizeRequestMessage request =
+        CanDelegatedMaxSizeRequestMessage.newBuilder()
             .setOwnerAddress(rawFrom)
             .setType(type)
             .build();
-    GrpcAPI.CanDelegatedMaxSizeResponseMessage responseMessage =
+    CanDelegatedMaxSizeResponseMessage responseMessage =
         useSolidityNode(nodeType)
             ? blockingStubSolidity.getCanDelegatedMaxSize(request)
             : blockingStub.getCanDelegatedMaxSize(request);
@@ -1195,6 +1200,26 @@ public class ApiWrapper implements Api {
     Block block = useSolidityNode(nodeType)
         ? blockingStubSolidity.getNowBlock(EmptyMessage.newBuilder().build())
         : blockingStub.getNowBlock(EmptyMessage.newBuilder().build());
+    if (!block.hasBlockHeader()) {
+      throw new IllegalException("Fail to get latest block.");
+    }
+    return block;
+  }
+
+  /**
+   * Query the latest block information
+   *
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return BlockExtention
+   * @throws IllegalException if fail to get now block
+   */
+  @Override
+  public BlockExtention getNowBlock2(NodeType... nodeType) throws IllegalException {
+    BlockExtention block = useSolidityNode(nodeType)
+        ? blockingStubSolidity.getNowBlock2(EmptyMessage.newBuilder().build())
+        : blockingStub.getNowBlock2(EmptyMessage.newBuilder().build());
     if (!block.hasBlockHeader()) {
       throw new IllegalException("Fail to get latest block.");
     }
@@ -1986,6 +2011,8 @@ public class ApiWrapper implements Api {
   /**
    * Get transactionInfo from block number
    *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getTransactionInfoByBlockNum(long blockNum, NodeType... nodeType) instead
    * @param blockNum The block height
    * @return TransactionInfoList
    * @throws IllegalException no transactions or the blockNum is incorrect
@@ -2002,6 +2029,9 @@ public class ApiWrapper implements Api {
 
   /**
    * Query the latest solid block information
+   *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getNowBlock2(NodeType... nodeType) instead
    *
    * @return BlockExtention
    * @throws IllegalException if fail to get now block
@@ -2020,6 +2050,8 @@ public class ApiWrapper implements Api {
   /**
    * Get transaction receipt info from a transaction id, must be in solid block
    *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getTransactionById(String txID, NodeType... nodeType) instead
    * @param txID Transaction hash, i.e. transaction id
    * @return Transaction
    * @throws IllegalException if the parameters are not correct
@@ -2041,6 +2073,28 @@ public class ApiWrapper implements Api {
   /**
    * Get the rewards that the voter has not received
    *
+   * @param address address, default hexString
+   * @param nodeType Optional parameter to specify which node to query.
+   *                 If not provided, uses full node default.
+   *                 If NodeType.SOLIDITY_NODE, uses solidity node.
+   * @return NumberMessage
+   */
+  @Override
+  public NumberMessage getRewardInfo(String address, NodeType... nodeType) {
+    ByteString bsAddress = parseAddress(address);
+    BytesMessage bytesMessage = BytesMessage.newBuilder()
+        .setValue(bsAddress)
+        .build();
+    return useSolidityNode(nodeType)
+        ? blockingStubSolidity.getRewardInfo(bytesMessage)
+        : blockingStub.getRewardInfo(bytesMessage);
+  }
+
+  /**
+   * Get the rewards that the voter has not received
+   *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getRewardInfo(String address, NodeType... nodeType) instead
    * @param address address, default hexString
    * @return NumberMessage
    */
@@ -2312,7 +2366,7 @@ public class ApiWrapper implements Api {
   @Override
   public long getBurnTRX(NodeType... nodeType) {
     EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
-    GrpcAPI.NumberMessage numberMessage = useSolidityNode(nodeType)
+    NumberMessage numberMessage = useSolidityNode(nodeType)
         ? blockingStubSolidity.getBurnTrx(emptyMessage)
         : blockingStub.getBurnTrx(emptyMessage);
 
@@ -2394,7 +2448,7 @@ public class ApiWrapper implements Api {
    */
   @Override
   public long getNextMaintenanceTime() {
-    GrpcAPI.NumberMessage numberMessage = blockingStub.getNextMaintenanceTime(
+    NumberMessage numberMessage = blockingStub.getNextMaintenanceTime(
         EmptyMessage.getDefaultInstance());
     return numberMessage.getNum();
   }
@@ -2475,7 +2529,7 @@ public class ApiWrapper implements Api {
    * @return transaction list information from pending pool
    */
   @Override
-  public GrpcAPI.TransactionIdList getTransactionListFromPending() {
+  public TransactionIdList getTransactionListFromPending() {
     return blockingStub.getTransactionListFromPending(
         EmptyMessage.getDefaultInstance());
   }
@@ -2488,7 +2542,7 @@ public class ApiWrapper implements Api {
    */
   @Override
   public long getPendingSize() {
-    GrpcAPI.NumberMessage pendingSize = blockingStub.getPendingSize(
+    NumberMessage pendingSize = blockingStub.getPendingSize(
         EmptyMessage.getDefaultInstance());
     return pendingSize.getNum();
   }
@@ -2640,7 +2694,7 @@ public class ApiWrapper implements Api {
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getBandwidthPrices(NodeType... nodeType) {
+  public PricesResponseMessage getBandwidthPrices(NodeType... nodeType) {
     EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
     return useSolidityNode(nodeType)
         ? blockingStubSolidity.getBandwidthPrices(emptyMessage)
@@ -2660,7 +2714,7 @@ public class ApiWrapper implements Api {
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getEnergyPrices(NodeType... nodeType) {
+  public PricesResponseMessage getEnergyPrices(NodeType... nodeType) {
     EmptyMessage emptyMessage = EmptyMessage.newBuilder().build();
     return useSolidityNode(nodeType)
         ? blockingStubSolidity.getEnergyPrices(emptyMessage)
@@ -2678,7 +2732,7 @@ public class ApiWrapper implements Api {
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getMemoFee() {
+  public PricesResponseMessage getMemoFee() {
     return blockingStub.getMemoFee(EmptyMessage.getDefaultInstance());
   }
 
@@ -2686,14 +2740,15 @@ public class ApiWrapper implements Api {
   /**
    * GetBandwidthPricesOnSolidity
    * Query historical bandwidth unit price.
-   *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getBandwidthPrices(NodeType... nodeType) instead
    * @return prices string: All historical bandwidth unit price information.
    * Each unit price change is separated by a comma.
    * Before the colon is the millisecond timestamp,
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getBandwidthPricesOnSolidity() {
+  public PricesResponseMessage getBandwidthPricesOnSolidity() {
     return blockingStubSolidity.getBandwidthPrices(EmptyMessage.getDefaultInstance());
   }
 
@@ -2701,14 +2756,15 @@ public class ApiWrapper implements Api {
   /**
    * GetEnergyPricesOnSolidity
    * Query historical energy unit price.
-   *
+   * @deprecated Since 0.10.0, scheduled for removal in future versions.
+   * use getEnergyPrices(NodeType... nodeType) instead
    * @return prices string: All historical bandwidth unit price information.
    * Each unit price change is separated by a comma.
    * Before the colon is the millisecond timestamp,
    * and after the colon is the bandwidth unit price in sun.
    */
   @Override
-  public Response.PricesResponseMessage getEnergyPricesOnSolidity() {
+  public PricesResponseMessage getEnergyPricesOnSolidity() {
     return blockingStubSolidity.getEnergyPrices(EmptyMessage.getDefaultInstance());
   }
 

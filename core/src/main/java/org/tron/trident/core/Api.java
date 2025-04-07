@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.Type;
-import org.tron.trident.api.GrpcAPI;
 import org.tron.trident.api.GrpcAPI.NumberMessage;
+import org.tron.trident.api.GrpcAPI.TransactionIdList;
 import org.tron.trident.core.contract.Contract;
 import org.tron.trident.core.exceptions.IllegalException;
 import org.tron.trident.core.key.KeyPair;
@@ -18,7 +18,6 @@ import org.tron.trident.proto.Common.SmartContract;
 import org.tron.trident.proto.Contract.AccountPermissionUpdateContract;
 import org.tron.trident.proto.Contract.AssetIssueContract;
 import org.tron.trident.proto.Contract.CreateSmartContract;
-import org.tron.trident.proto.Response;
 import org.tron.trident.proto.Response.Account;
 import org.tron.trident.proto.Response.AccountNetMessage;
 import org.tron.trident.proto.Response.AccountResourceMessage;
@@ -29,6 +28,7 @@ import org.tron.trident.proto.Response.BlockListExtention;
 import org.tron.trident.proto.Response.ChainParameters;
 import org.tron.trident.proto.Response.DelegatedResourceAccountIndex;
 import org.tron.trident.proto.Response.DelegatedResourceList;
+import org.tron.trident.proto.Response.EstimateEnergyMessage;
 import org.tron.trident.proto.Response.Exchange;
 import org.tron.trident.proto.Response.ExchangeList;
 import org.tron.trident.proto.Response.MarketOrder;
@@ -37,6 +37,7 @@ import org.tron.trident.proto.Response.MarketOrderPairList;
 import org.tron.trident.proto.Response.MarketPriceList;
 import org.tron.trident.proto.Response.NodeInfo;
 import org.tron.trident.proto.Response.NodeList;
+import org.tron.trident.proto.Response.PricesResponseMessage;
 import org.tron.trident.proto.Response.Proposal;
 import org.tron.trident.proto.Response.ProposalList;
 import org.tron.trident.proto.Response.SmartContractDataWrapper;
@@ -126,6 +127,8 @@ public interface Api {
   TransactionExtention updateAccount(String address, String accountName) throws IllegalException;
 
   Block getNowBlock(NodeType... nodeType) throws IllegalException;
+
+  BlockExtention getNowBlock2(NodeType... nodeType) throws IllegalException;
 
   BlockExtention getBlockByNum(long blockNum, NodeType... nodeType) throws IllegalException;
 
@@ -220,15 +223,22 @@ public interface Api {
 
   TransactionApprovedList getTransactionApprovedList(Transaction trx);
 
+  @Deprecated
   Account getAccountSolidity(String address);
 
+  @Deprecated
   TransactionInfoList getTransactionInfoByBlockNumSolidity(long blockNum) throws IllegalException;
 
+  @Deprecated
   BlockExtention getNowBlockSolidity() throws IllegalException;
 
+  @Deprecated
   Transaction getTransactionByIdSolidity(String txID) throws IllegalException;
 
+  @Deprecated
   NumberMessage getRewardSolidity(String address);
+
+  NumberMessage getRewardInfo(String address, NodeType... nodeType);
 
   TransactionExtention updateBrokerage(String address, int brokerage) throws IllegalException;
 
@@ -268,7 +278,7 @@ public interface Api {
 
   TransactionExtention deleteProposal(String ownerAddress, long proposalId) throws IllegalException;
 
-  GrpcAPI.TransactionIdList getTransactionListFromPending();
+  TransactionIdList getTransactionListFromPending();
 
   long getPendingSize();
 
@@ -276,14 +286,14 @@ public interface Api {
 
   Block getBlockById(String blockID);
 
-  Response.EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
+  EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
       Function function, NodeType... nodeType);
 
-  Response.EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
+  EstimateEnergyMessage estimateEnergy(String ownerAddress, String contractAddress,
       String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType);
 
   @Deprecated
-  Response.EstimateEnergyMessage estimateEnergyV2(String ownerAddress, String contractAddress,
+  EstimateEnergyMessage estimateEnergyV2(String ownerAddress, String contractAddress,
       String callData);
 
   @Deprecated
@@ -301,15 +311,17 @@ public interface Api {
   TransactionExtention triggerConstantContract(String ownerAddress, String contractAddress,
       String callData, long callValue, long tokenValue, String tokenId, NodeType... nodeType);
 
-  Response.PricesResponseMessage getBandwidthPrices(NodeType... nodeType);
+  PricesResponseMessage getBandwidthPrices(NodeType... nodeType);
 
-  Response.PricesResponseMessage getEnergyPrices(NodeType... nodeType);
+  PricesResponseMessage getEnergyPrices(NodeType... nodeType);
 
-  Response.PricesResponseMessage getMemoFee();
+  PricesResponseMessage getMemoFee();
 
-  Response.PricesResponseMessage getBandwidthPricesOnSolidity();
+  @Deprecated
+  PricesResponseMessage getBandwidthPricesOnSolidity();
 
-  Response.PricesResponseMessage getEnergyPricesOnSolidity();
+  @Deprecated
+  PricesResponseMessage getEnergyPricesOnSolidity();
 
   TransactionExtention clearContractABI(String ownerAddress, String contractAddress)
       throws IllegalException;

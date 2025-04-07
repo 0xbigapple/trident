@@ -1211,6 +1211,7 @@ public class ApiWrapper implements Api {
    * @return BlockExtention
    * @throws IllegalException if fail to get block
    */
+  @Override
   public BlockExtention getBlockByNum(long blockNum, NodeType... nodeType)
       throws IllegalException {
     NumberMessage.Builder builder = NumberMessage.newBuilder();
@@ -2895,7 +2896,8 @@ public class ApiWrapper implements Api {
    * @return MarketOrderList
    */
   @Override
-  public MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId, NodeType... nodeType) {
+  public MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId,
+      NodeType... nodeType) {
     MarketOrderPair param =
         MarketOrderPair.newBuilder()
             .setSellTokenId(ByteString.copyFrom(sellTokenId.getBytes()))
@@ -2932,7 +2934,8 @@ public class ApiWrapper implements Api {
    * @return MarketPriceList
    */
   @Override
-  public MarketPriceList getMarketPriceByPair(String sellTokenId, String buyTokenId, NodeType... nodeType) {
+  public MarketPriceList getMarketPriceByPair(String sellTokenId, String buyTokenId,
+      NodeType... nodeType) {
     MarketOrderPair param =
         MarketOrderPair.newBuilder()
             .setSellTokenId(ByteString.copyFrom(sellTokenId.getBytes()))

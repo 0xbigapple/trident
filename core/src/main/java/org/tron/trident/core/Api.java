@@ -330,7 +330,8 @@ public interface Api {
 
   MarketOrder getMarketOrderById(String txn, NodeType... nodeType);
 
-  MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId, NodeType... nodeType);
+  MarketOrderList getMarketOrderListByPair(String sellTokenId, String buyTokenId,
+      NodeType... nodeType);
 
   MarketOrderPairList getMarketPairList(NodeType... nodeType);
 

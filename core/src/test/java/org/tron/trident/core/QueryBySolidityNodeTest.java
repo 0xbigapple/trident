@@ -1,6 +1,7 @@
 package org.tron.trident.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,6 +9,7 @@ import com.google.protobuf.ByteString;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
+import org.checkerframework.checker.units.qual.N;
 import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.FunctionEncoder;
 import org.tron.trident.abi.TypeReference;
@@ -338,6 +340,38 @@ class QueryBySolidityNodeTest extends BaseTest {
   void testGetRewardInfo() {
     NumberMessage numberMessage = client.getRewardInfo(testAddress, NodeType.SOLIDITY_NODE);
     assertTrue(numberMessage.getNum() >= 0);
+  }
+
+  @Test
+  void testNodeType() {
+
+    BlockExtention blockExtention = client.getBlock(false);
+    assertNotNull(blockExtention);
+    blockExtention = client.getBlock(false, NodeType.FULL_NODE);
+    assertNotNull(blockExtention);
+    blockExtention = client.getBlock(false, NodeType.SOLIDITY_NODE);
+    assertNotNull(blockExtention);
+    try {
+      blockExtention = client.getBlock(false, null);
+    } catch (Exception exception) {
+      assertEquals(exception.getMessage(), "nodeType should not be null");
+    }
+
+    try {
+      blockExtention = client.getBlock(false, new NodeType[]{null});
+    } catch (Exception exception) {
+      assertEquals(exception.getMessage(), "nodeType element should not be null");
+    }
+
+    blockExtention = client.getBlock(false, new NodeType[]{});
+    assertNotNull(blockExtention);
+
+    try {
+      blockExtention = client.getBlock(false, NodeType.SOLIDITY_NODE, NodeType.FULL_NODE);
+    } catch (Exception exception) {
+      assertEquals(exception.getMessage(), "only one nodeType is allowed");
+    }
+
   }
 
 }

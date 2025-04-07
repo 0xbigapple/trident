@@ -393,11 +393,42 @@ public class ApiWrapper implements Api {
 
   /**
    * Check if using solidity node
+   * Only SOLIDITY_NODE and FULL_NODE are accepted as valid inputs.
+   *
    * @param nodeType Optional node type array
-   * @return true if using solidity node, false otherwise
+   * @return true if the node type is SOLIDITY_NODE, false otherwise
+   * @throws IllegalArgumentException if the input is null, empty, or contains invalid node type
    */
   private boolean useSolidityNode(NodeType... nodeType) {
-    return nodeType.length > 0 && nodeType[0] == NodeType.SOLIDITY_NODE;
+
+    // check null
+    if (nodeType == null) {
+      throw new IllegalArgumentException("nodeType should not be null");
+    }
+
+    // When no parameter is provided, treat as FULL_NODE
+    if (nodeType.length == 0) {
+      return false;
+    }
+
+    // Validate that the node type is not null
+    if (nodeType[0] == null) {
+      throw new IllegalArgumentException("nodeType element should not be null");
+    }
+
+    // Validate that the node type is either SOLIDITY_NODE or FULL_NODE
+    if (nodeType[0] != NodeType.SOLIDITY_NODE && nodeType[0] != NodeType.FULL_NODE) {
+      throw new IllegalArgumentException(
+          String.format("nodeType must be either SOLIDITY_NODE or FULL_NODE, but got: %s",
+              nodeType[0])
+      );
+    }
+
+    if (nodeType.length > 1) {
+      throw new IllegalArgumentException("only one nodeType is allowed");
+    }
+
+    return nodeType[0] == NodeType.SOLIDITY_NODE;
   }
 
   public static VoteWitnessContract createVoteWitnessContract(ByteString ownerAddress,
@@ -2862,6 +2893,7 @@ public class ApiWrapper implements Api {
     BlockReq blockReq = BlockReq.newBuilder()
         .setDetail(detail)
         .build();
+
     return useSolidityNode(nodeType)
         ? blockingStubSolidity.getBlock(blockReq)
         : blockingStub.getBlock(blockReq);
@@ -3119,6 +3151,7 @@ public class ApiWrapper implements Api {
   @Override
   public long getTransactionCountByBlockNum(long blockNum, NodeType... nodeType) {
     NumberMessage message = NumberMessage.newBuilder().setNum(blockNum).build();
+    System.out.println(useSolidityNode(nodeType));
     return useSolidityNode(nodeType)
         ? blockingStubSolidity.getTransactionCountByBlockNum(message).getNum()
         : blockingStub.getTransactionCountByBlockNum(message).getNum();

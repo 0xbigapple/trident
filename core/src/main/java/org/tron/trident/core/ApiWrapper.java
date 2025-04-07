@@ -1995,10 +1995,11 @@ public class ApiWrapper implements Api {
    * Get solid account info by address
    *
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getAccount(String address, NodeType.SOLIDITY_NODE) instead
+   * use {@link #getAccount(String, NodeType...)} instead
    * @param address address, default hexString
    * @return Account
    */
+  @Deprecated
   @Override
   public Account getAccountSolidity(String address) {
     ByteString bsAddress = parseAddress(address);
@@ -2012,11 +2013,12 @@ public class ApiWrapper implements Api {
    * Get transactionInfo from block number
    *
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getTransactionInfoByBlockNum(long blockNum, NodeType... nodeType) instead
+   * use {@link #getTransactionInfoByBlockNum(long, NodeType...)} instead
    * @param blockNum The block height
    * @return TransactionInfoList
    * @throws IllegalException no transactions or the blockNum is incorrect
    */
+  @Deprecated
   @Override
   public TransactionInfoList getTransactionInfoByBlockNumSolidity(long blockNum)
       throws IllegalException {
@@ -2031,11 +2033,12 @@ public class ApiWrapper implements Api {
    * Query the latest solid block information
    *
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getNowBlock2(NodeType... nodeType) instead
+   * use {@link #getNowBlock2(NodeType...)} instead
    *
    * @return BlockExtention
    * @throws IllegalException if fail to get now block
    */
+  @Deprecated
   @Override
   public BlockExtention getNowBlockSolidity() throws IllegalException {
     BlockExtention blockExtention = blockingStubSolidity.getNowBlock2(
@@ -2051,11 +2054,12 @@ public class ApiWrapper implements Api {
    * Get transaction receipt info from a transaction id, must be in solid block
    *
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getTransactionById(String txID, NodeType... nodeType) instead
+   * use {@link #getTransactionById(String, NodeType...)} instead
    * @param txID Transaction hash, i.e. transaction id
    * @return Transaction
    * @throws IllegalException if the parameters are not correct
    */
+  @Deprecated
   @Override
   public Transaction getTransactionByIdSolidity(String txID) throws IllegalException {
     ByteString bsTxId = ByteString.copyFrom(ByteArray.fromHexString(txID));
@@ -2094,10 +2098,11 @@ public class ApiWrapper implements Api {
    * Get the rewards that the voter has not received
    *
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getRewardInfo(String address, NodeType... nodeType) instead
+   * use {@link #getRewardInfo(String, NodeType...)} instead
    * @param address address, default hexString
    * @return NumberMessage
    */
+  @Deprecated
   @Override
   public NumberMessage getRewardSolidity(String address) {
     ByteString bsAddress = parseAddress(address);
@@ -2741,12 +2746,13 @@ public class ApiWrapper implements Api {
    * GetBandwidthPricesOnSolidity
    * Query historical bandwidth unit price.
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getBandwidthPrices(NodeType... nodeType) instead
+   * use {@link  #getBandwidthPrices(NodeType...)} instead
    * @return prices string: All historical bandwidth unit price information.
    * Each unit price change is separated by a comma.
    * Before the colon is the millisecond timestamp,
    * and after the colon is the bandwidth unit price in sun.
    */
+  @Deprecated
   @Override
   public PricesResponseMessage getBandwidthPricesOnSolidity() {
     return blockingStubSolidity.getBandwidthPrices(EmptyMessage.getDefaultInstance());
@@ -2757,12 +2763,13 @@ public class ApiWrapper implements Api {
    * GetEnergyPricesOnSolidity
    * Query historical energy unit price.
    * @deprecated Since 0.10.0, scheduled for removal in future versions.
-   * use getEnergyPrices(NodeType... nodeType) instead
+   * use {@link #getEnergyPrices(NodeType...)} instead
    * @return prices string: All historical bandwidth unit price information.
    * Each unit price change is separated by a comma.
    * Before the colon is the millisecond timestamp,
    * and after the colon is the bandwidth unit price in sun.
    */
+  @Deprecated
   @Override
   public PricesResponseMessage getEnergyPricesOnSolidity() {
     return blockingStubSolidity.getEnergyPrices(EmptyMessage.getDefaultInstance());

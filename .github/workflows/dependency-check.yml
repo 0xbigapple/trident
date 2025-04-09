@@ -1,4 +1,4 @@
-name: Dependency Check
+name: OWASP Dependency Check
 
 on:
   push:
@@ -9,50 +9,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  dependency-check:
+  scan:
+    name: Dependency Check
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Setup Java 8
+        uses: actions/checkout@v4
+      
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
           java-version: '8'
           distribution: 'temurin'
-
-      # Install Dependency Check CLI
-      - name: Setup Dependency-Check
-        run: |
-          mkdir -p $HOME/OWASP
-          wget -q https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip
-          unzip -q dependency-check-6.5.3-release.zip -d $HOME/OWASP
           
-      # Run Dependency Check
-      - name: Run Dependency-Check
+      - name: Download Dependency Check CLI
         run: |
-          $HOME/OWASP/dependency-check/bin/dependency-check.sh \
+          VERSION=6.5.3
+          wget -q "https://github.com/jeremylong/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}-release.zip"
+          unzip -q dependency-check-${VERSION}-release.zip
+          chmod +x dependency-check/bin/dependency-check.sh
+      
+      - name: Run Dependency Check
+        run: |
+          ./dependency-check/bin/dependency-check.sh \
             --scan . \
             --format "HTML" "JSON" \
-            --out "build/reports" \
+            --out . \
             --failOnCVSS 11 \
-            --javaVersion "1.8" \
-            --disableNodeAudit \
-            --disableRubygems \
-            --disablePyDist \
-            --disablePyPkg \
-            --disableComposer
+            --enableRetired
 
-      # Upload analysis results
-      - name: Upload Dependency Check Report
-        if: always()
-        uses: actions/upload-artifact@v3
+      - name: Upload Test results
+        uses: actions/upload-artifact@v4
         with:
-          name: dependency-check-report
-          path: build/reports/
+          name: Dependency-Check-Report
+          path: |
+            dependency-check-report.html
+            dependency-check-report.json
           retention-days: 30

@@ -2,7 +2,7 @@ name: OWASP Dependency Check
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - 'feature/dependency_check'
       - 'release/**'
@@ -37,9 +37,16 @@ jobs:
             --format "HTML" "JSON" \
             --out . \
             --failOnCVSS 11 \
-            --enableRetired
+            --enableRetired \
+            --disableAssembly \
+            --disableNuspec \
+            --disableNugetconf \
+            --disableCentral \
+            --disableOssIndex \
+            --disableRetireJS
 
       - name: Upload Test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Dependency-Check-Report

@@ -22,6 +22,10 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
+
+      # Download upload-artifact action
+      - name: Download upload-artifact action
+        uses: actions/download-artifact@v3
           
       # Install Dependency Check CLI
       - name: Setup Dependency-Check

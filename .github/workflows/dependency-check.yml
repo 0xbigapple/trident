@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - 'feature/dependency_check'
-      - 'release/**'
+      - 'release_**'
   workflow_dispatch:
 
 jobs:
@@ -38,8 +37,9 @@ jobs:
         run: |
           ./dependency-check/bin/dependency-check.sh \
             --scan build/libs \
-            --scan ~/.gradle/caches \
-            --format "HTML" "JSON" \
+            --scan ~/.gradle/caches/modules-2/files-2.1 \
+            --format "HTML" \
+            --format "JSON" \
             --out . \
             --failOnCVSS 11 \
             --project "trident" \

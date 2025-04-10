@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'release_**'
+      - 'feature/dependency_check'
   workflow_dispatch:
 
 jobs:

@@ -22,7 +22,11 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
-          
+
+      - name: Gradle build
+        run: |
+          ./gradlew build  -x test
+      
       - name: Download Dependency Check CLI
         run: |
           VERSION=6.5.3
@@ -33,10 +37,12 @@ jobs:
       - name: Run Dependency Check
         run: |
           ./dependency-check/bin/dependency-check.sh \
-            --scan . \
+            --scan build/libs \
+            --scan ~/.gradle/caches \
             --format "HTML" "JSON" \
             --out . \
             --failOnCVSS 11 \
+            --project "trident" \
             --enableRetired \
             --disableAssembly \
             --disableNuspec \
@@ -44,6 +50,34 @@ jobs:
             --disableCentral \
             --disableOssIndex \
             --disableRetireJS
+
+      - name: Count Vulnerability Severity Levels
+        run: |
+          # Count severity levels from HTML table
+          CRITICAL=$(grep -o '<td data-sort-value="[0-9.]\+">CRITICAL</td>' dependency-check-report.html | wc -l)
+          HIGH=$(grep -o '<td data-sort-value="[0-9.]\+">HIGH</td>' dependency-check-report.html | wc -l)
+          MEDIUM=$(grep -o '<td data-sort-value="[0-9.]\+">MEDIUM</td>' dependency-check-report.html | wc -l)
+          LOW=$(grep -o '<td data-sort-value="[0-9.]\+">LOW</td>' dependency-check-report.html | wc -l)
+
+          # Display in workflow logs
+          echo "::group::Vulnerability Severity Statistics"
+          echo "CRITICAL: $CRITICAL"
+          echo "HIGH: $HIGH"
+          echo "MEDIUM: $MEDIUM"
+          echo "LOW: $LOW"
+          echo "TOTAL: $((CRITICAL + HIGH + MEDIUM + LOW))"
+          echo "::endgroup::"
+
+          # Add to Job Summary
+          echo "### Dependency Security Scan Results :shield:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| :red_circle: CRITICAL | $CRITICAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| :orange_circle: HIGH | $HIGH |" >> $GITHUB_STEP_SUMMARY
+          echo "| :yellow_circle: MEDIUM | $MEDIUM |" >> $GITHUB_STEP_SUMMARY
+          echo "| :green_circle: LOW | $LOW |" >> $GITHUB_STEP_SUMMARY
+          echo "| **TOTAL** | **$((CRITICAL + HIGH + MEDIUM + LOW))** |" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Test results
         if: always()

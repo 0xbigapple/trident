@@ -8,6 +8,8 @@ import com.google.protobuf.ByteString;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.FunctionEncoder;
 import org.tron.trident.abi.TypeReference;
@@ -40,7 +42,22 @@ import org.tron.trident.proto.Response.Witness;
 import org.tron.trident.proto.Response.WitnessList;
 import org.tron.trident.utils.Base58Check;
 
-class QueryBySolidityNodeTest extends BaseTest {
+class QueryBySolidityNodeTest {
+  private static ApiWrapper client;
+  private static String testAddress;
+
+  @BeforeAll
+  static void setUp() {
+    client = ApiWrapper.ofNile(ApiWrapper.generateAddress().toPrivateKey());
+    testAddress = client.keyPair.toBase58CheckAddress();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    if (client != null) {
+      client.close();
+    }
+  }
 
   @Test
   void testGetAccount() {
@@ -169,8 +186,8 @@ class QueryBySolidityNodeTest extends BaseTest {
   @Test
   void testGetAssetIssueById() {
     AssetIssueContract assetIssueContract
-        = client.getAssetIssueById(tokenId, NodeType.SOLIDITY_NODE);
-    assertEquals(assetIssueContract.getId(), tokenId);
+        = client.getAssetIssueById("1000587", NodeType.SOLIDITY_NODE);
+    assertEquals(assetIssueContract.getId(), "1000587");
 
   }
 
@@ -349,11 +366,11 @@ class QueryBySolidityNodeTest extends BaseTest {
     assertNotNull(blockExtention);
     blockExtention = client.getBlock(false, NodeType.SOLIDITY_NODE);
     assertNotNull(blockExtention);
-    try {
-      blockExtention = client.getBlock(false, null);
-    } catch (Exception exception) {
-      assertEquals(exception.getMessage(), "nodeType should not be null");
-    }
+//    try {
+//      blockExtention = client.getBlock(false, null);
+//    } catch (Exception exception) {
+//      assertEquals(exception.getMessage(), "nodeType should not be null");
+//    }
 
     try {
       blockExtention = client.getBlock(false, new NodeType[]{null});

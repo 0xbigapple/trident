@@ -20,15 +20,15 @@ import org.tron.trident.utils.Base58Check;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Disabled("add private key to enable this case")
-public class AssertTest extends BaseTest {
-  private String assertName;
+public class AssetTest extends BaseTest {
+  private String assetName;
   private KeyPair account;
 
   @Order(1)
   @Test
   void genAccount() throws IllegalException, InterruptedException {
     account = ApiWrapper.generateAddress();
-    // createAssert need 1024 TRX
+    // createAsset need 1024 TRX
     TransactionExtention transaction
         = client.transfer(testAddress, account.toBase58CheckAddress(), 1050_000_000);
     Transaction signTransaction = client.signTransaction(transaction);
@@ -42,16 +42,16 @@ public class AssertTest extends BaseTest {
 
   @Order(2)
   @Test
-  void createAssert() throws IllegalException, InterruptedException {
+  void createAsset() throws IllegalException, InterruptedException {
 
     ApiWrapper client2 = ApiWrapper.ofNile(account.toPrivateKey());
 
-    assertName = "Trident" + System.currentTimeMillis();
-    String abbr = assertName;
+    assetName = "Trident" + System.currentTimeMillis();
+    String abbr = assetName;
     long startTime = System.currentTimeMillis() + 24 * 60 * 60 * 1000L;
     long endTime = startTime + 365 * 24 * 60 * 60 * 1000L;
     TransactionExtention transactionExtention
-        = client2.createAssetIssue(account.toBase58CheckAddress(), assertName, abbr, 10_000_000, 10,
+        = client2.createAssetIssue(account.toBase58CheckAddress(), assetName, abbr, 10_000_000, 10,
         10, startTime, endTime, "http://test.trident.com",
         0, 0, 6, "trident test");
     Transaction signTransaction = client2.signTransaction(transactionExtention);
@@ -68,7 +68,7 @@ public class AssertTest extends BaseTest {
   @Order(3)
   @Test
   void testGetAssetIssueByName() {
-    AssetIssueContract assetIssueContract = client.getAssetIssueByName(assertName);
+    AssetIssueContract assetIssueContract = client.getAssetIssueByName(assetName);
     assertEquals(assetIssueContract.getPrecision(), 6);
     assertEquals(Base58Check.bytesToBase58(assetIssueContract.getOwnerAddress().toByteArray()),
         account.toBase58CheckAddress());
@@ -79,7 +79,7 @@ public class AssertTest extends BaseTest {
   void testGetAssetIssueByNameBySolidityNode() throws InterruptedException {
     sleep(60 * 1000L); //wait for finality
     AssetIssueContract assetIssueContract
-        = client.getAssetIssueByName(assertName, NodeType.SOLIDITY_NODE);
+        = client.getAssetIssueByName(assetName, NodeType.SOLIDITY_NODE);
     assertEquals(assetIssueContract.getPrecision(), 6);
     assertEquals(Base58Check.bytesToBase58(assetIssueContract.getOwnerAddress().toByteArray()),
         account.toBase58CheckAddress());

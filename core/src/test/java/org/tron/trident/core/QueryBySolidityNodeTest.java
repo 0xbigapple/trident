@@ -1,7 +1,6 @@
 package org.tron.trident.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,7 +8,6 @@ import com.google.protobuf.ByteString;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
-import org.checkerframework.checker.units.qual.N;
 import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.FunctionEncoder;
 import org.tron.trident.abi.TypeReference;

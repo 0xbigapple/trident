@@ -16,10 +16,12 @@ Trident is a lightweight Java SDK for interacting with the TRON blockchain. It p
 
 Trident-java is compiled with java version 1.8 and gradle 7.6.
 
+Latest version can be found on [Maven Central](https://mvnrepository.com/artifact/io.github.tronprotocol/trident).
+
 ### Gradle
 
 ```groovy
-implementation("io.github.tronprotocol:trident:0.9.2")
+implementation("io.github.tronprotocol:trident:<version>") // Check latest version from Maven Central
 ```
 
 ### Maven
@@ -30,13 +32,14 @@ Add repo setting:
 <dependency>
   <groupId>io.github.tronprotocol</groupId>
   <artifactId>trident</artifactId>
-  <version>0.9.2</version>
+  <version>[version]</version>
 </dependency>
 ```
 
+
 ### Using local build
 
-You can use locally built packages by follow steps:
+You can use locally built packages by follow steps(eg. 0.9.2):
 
 1. Copy the compiled jar file to your project's `libs` directory
 2. Add the following to your project's `build.gradle`:
@@ -84,7 +87,7 @@ System.out.println("txId is " + txId);
 
 ## Documentation
 
-- [Official Documentation](https://developers.tron.network/docs/trident-java)
+- [Official Documentation](https://tronprotocol.github.io/trident/)
 
 
 ## Build instructions
@@ -94,7 +97,7 @@ Trident includes integration tests for running on the Nile testnet. If you want 
 ```
    //@Disabled("add private key to enable this case")
 ```
-2. Set the tron.private-key and tron.tokenId in the test configuration file in the core directory [here](trident-java/core/src/test/resources/application-test.properties).
+2. Set the tron.private-key and tron.tokenId in the test configuration file in the core directory [here](core/src/test/resources/application-test.properties).
 
 
 ``` 

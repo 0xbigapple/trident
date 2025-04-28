@@ -3151,7 +3151,6 @@ public class ApiWrapper implements Api {
   @Override
   public long getTransactionCountByBlockNum(long blockNum, NodeType... nodeType) {
     NumberMessage message = NumberMessage.newBuilder().setNum(blockNum).build();
-    System.out.println(useSolidityNode(nodeType));
     return useSolidityNode(nodeType)
         ? blockingStubSolidity.getTransactionCountByBlockNum(message).getNum()
         : blockingStub.getTransactionCountByBlockNum(message).getNum();

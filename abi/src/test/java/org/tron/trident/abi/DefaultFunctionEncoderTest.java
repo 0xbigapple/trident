@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.datatypes.Address;
 import org.tron.trident.abi.datatypes.Bool;
@@ -335,5 +336,62 @@ public class DefaultFunctionEncoderTest {
     for (TypeReference<Type> actualOutput : actualFunction.getOutputParameters()) {
       assertEquals(actualOutput.getType(), expectedOutput.next().getType());
     }
+  }
+
+  @Test
+  public void testBuildMethodSignatureWithDynamicStruct_dynamicArray() {
+    List<DynamicBytes> bytes = new java.util.ArrayList<>();
+
+    bytes.add(new DynamicBytes("1234".getBytes()));
+    bytes.add(new DynamicBytes("5678".getBytes()));
+
+    List<Type> dynamicArray = Arrays.asList(
+        new Uint256(10),
+        new DynamicArray<>(DynamicBytes.class, bytes)
+    );
+
+    DynamicStruct dynamicStruct =
+        new DynamicStruct(dynamicArray);
+
+    String functionDynamicArray = FunctionEncoder.buildMethodSignature(
+        "testBytes", dynamicArray);
+
+    String functionDynamicStruct = FunctionEncoder.buildMethodSignature(
+        "testBytes", Collections.singletonList(dynamicStruct));
+
+    assertEquals("testBytes(uint256,bytes[])", functionDynamicArray);
+
+    assertEquals("testBytes((uint256,bytes[]))", functionDynamicStruct);
+
+    assertEquals("880e82a8", FunctionEncoder.buildMethodId(functionDynamicArray));
+
+    assertEquals("256b906f", FunctionEncoder.buildMethodId(functionDynamicStruct));
+
+  }
+
+  @Test
+  public void testBuildMethodSignatureWithDynamicStruct_Uint() {
+    List<Uint> uintArrayList = new java.util.ArrayList<>();
+
+    uintArrayList.add(new Uint(new BigInteger("1234")));
+    uintArrayList.add(new Uint(new BigInteger("2345")));
+
+    List<Type> dynamicArray = Arrays.asList(
+        new Uint(new BigInteger(String.valueOf(10))),
+        new DynamicArray<>(Uint.class, uintArrayList)
+    );
+
+    DynamicStruct dynamicStruct =
+        new DynamicStruct(dynamicArray);
+
+    String functionDynamicArray = FunctionEncoder.buildMethodSignature(
+        "testBytes", dynamicArray);
+
+    String functionDynamicStruct = FunctionEncoder.buildMethodSignature(
+        "testBytes", Collections.singletonList(dynamicStruct));
+
+    assertEquals("testBytes(uint256,uint256[])", functionDynamicArray);
+    assertEquals("testBytes((uint256,uint256[]))", functionDynamicStruct);
+
   }
 }

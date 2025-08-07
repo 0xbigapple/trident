@@ -377,6 +377,8 @@ public final class AbiTypes {
       return "string";
     } else if (DynamicBytes.class.equals(type)) {
       return "bytes";
+    } else if (Uint.class.equals(type)) {
+      return "uint256";
     } else {
       return type.getSimpleName().toLowerCase();
     }

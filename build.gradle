@@ -1,4 +1,4 @@
-def VERSION = '0.11.0'
+def VERSION = '0.11.1'
 group 'io.github.tronprotocol'
 def JITPACK_GROUP = "com.github.0xbigapple"
 

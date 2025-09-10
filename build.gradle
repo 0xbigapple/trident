@@ -137,16 +137,17 @@ subprojects {
         source = files() //use empty files to ignore test class
     }
 
-    publishing {
-        publications {
-            "${project.name}Publication"(MavenPublication) {
-                from components.java
-                groupId = JITPACK_GROUP
-                artifactId = "trident-${project.name}"
-                version = VERSION
-            }
-        }
-    }
+    // subproject not publish
+    // publishing {
+    //     publications {
+    //         "${project.name}Publication"(MavenPublication) {
+    //             from components.java
+    //             groupId = JITPACK_GROUP
+    //             artifactId = "trident-${project.name}"
+    //             version = VERSION
+    //         }
+    //     }
+    // }
 
 }
 
@@ -212,17 +213,29 @@ publishing {
             // Add dependencies from all subprojects
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
+                
+                // Collect all external dependencies from subprojects
+                def externalDeps = [:]
                 subprojects.each { subproject ->
                     subproject.configurations.implementation.allDependencies.each { dep ->
-                        if (dep.group && dep.name && dep.version) {
-                            def dependencyNode = dependenciesNode.appendNode('dependency')
-                            dependencyNode.appendNode('groupId', dep.group)
-                            dependencyNode.appendNode('artifactId', dep.name)
-                            dependencyNode.appendNode('version', dep.version)
-                            dependencyNode.appendNode('scope', 'compile')
+                        if (dep.group && dep.name && dep.version && !dep.group.startsWith('trident')) {
+                            def key = "${dep.group}:${dep.name}:${dep.version}"
+                            if (!externalDeps.containsKey(key)) {
+                                externalDeps[key] = dep
+                            }
                         }
                     }
                 }
+                
+                // Add external dependencies
+                externalDeps.values().each { dep ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dep.group)
+                    dependencyNode.appendNode('artifactId', dep.name)
+                    dependencyNode.appendNode('version', dep.version)
+                    dependencyNode.appendNode('scope', 'compile')
+                }
+
             }
         }
     }

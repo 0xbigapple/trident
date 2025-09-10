@@ -1,4 +1,4 @@
-def VERSION = '0.11.4'
+def VERSION = '0.11.5'
 group 'io.github.tronprotocol'
 def JITPACK_GROUP = "com.github.0xbigapple"
 
@@ -153,6 +153,14 @@ subprojects {
 
 shadowJar {
     zip64 = true
+    archiveClassifier = ''
+    archiveBaseName = 'trident'
+    archiveVersion = VERSION
+
+    from subprojects.collect { project ->
+        project.sourceSets.main.output
+    }
+    configurations = [project.configurations.runtimeClasspath]
 }
 
 javadoc {
@@ -233,6 +241,39 @@ publishing {
                     connection = 'scm:git:git://github.com/0xbigapple/trident.git'
                     developerConnection = 'scm:git:ssh://github.com:0xbigapple/trident.git'
                     url = 'https://github.com/0xbigapple/trident'
+                }
+            }
+            
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                
+
+                def externalDeps = [:]
+                subprojects.each { subproject ->
+                    subproject.configurations.implementation.allDependencies.each { dep ->
+
+                        if (dep.group && dep.name && dep.version && 
+                            !dep.group.startsWith('trident') && 
+                            !dep.group.equals(JITPACK_GROUP) &&
+                            !dep.name.equals('utils') &&
+                            !dep.name.equals('abi') &&
+                            !dep.name.equals('core')) {
+                            
+                            def key = "${dep.group}:${dep.name}:${dep.version}"
+                            if (!externalDeps.containsKey(key)) {
+                                externalDeps[key] = dep
+                            }
+                        }
+                    }
+                }
+
+                externalDeps.values().each { dep ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dep.group)
+                    dependencyNode.appendNode('artifactId', dep.name)
+                    dependencyNode.appendNode('version', dep.version)
+                    dependencyNode.appendNode('scope', 'compile')
                 }
             }
             

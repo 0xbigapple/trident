@@ -13,6 +13,12 @@
 
 package org.tron.trident.abi;
 
+import static org.tron.trident.abi.DefaultFunctionReturnDecoder.getDataOffset;
+import static org.tron.trident.abi.TypeReference.makeTypeReference;
+import static org.tron.trident.abi.Utils.findStructConstructor;
+import static org.tron.trident.abi.Utils.getSimpleTypeName;
+import static org.tron.trident.abi.Utils.staticStructNestedPublicFieldsFlatList;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -54,6 +60,10 @@ import org.tron.trident.utils.Numeric;
  * Ethereum Contract Application Binary Interface (ABI) decoding for types. Decoding is not
  * documented, but is the reverse of the encoding details located <a
  * href="https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI">here</a>.
+ *
+ * <p>The public API is composed of "decode*" methods and provides backward-compatibility. See
+ * https://github.com/hyperledger/web3j/issues/1591 for a discussion about decoding and possible
+ * improvements.
  */
 public class TypeDecoder {
 
@@ -114,6 +124,11 @@ public class TypeDecoder {
 
   static <T extends Type> T decode(String input, Class<T> type) {
     return decode(input, 0, type);
+  }
+
+  public static <T extends Type> T decode(String input, TypeReference<?> type)
+          throws ClassNotFoundException {
+    return decode(input, 0, ((TypeReference<T>) type).getClassType());
   }
 
   public static Address decodeAddress(String input) {
@@ -250,6 +265,7 @@ public class TypeDecoder {
     return (Type) cons.newInstance(constructorArg);
   }
 
+  @SuppressWarnings("unchecked")
   static <T extends Type> int getSingleElementLength(String input, int offset, Class<T> type) {
     if (input.length() == offset) {
       return 0;
@@ -257,6 +273,8 @@ public class TypeDecoder {
         || Utf8String.class.isAssignableFrom(type)) {
       // length field + data value
       return (decodeUintAsInt(input, offset) / Type.MAX_BYTE_LENGTH) + 2;
+    } else if (StaticStruct.class.isAssignableFrom(type)) {
+      return staticStructNestedPublicFieldsFlatList((Class<Type>) type).size();
     } else {
       return 1;
     }

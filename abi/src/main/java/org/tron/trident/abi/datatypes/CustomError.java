@@ -17,34 +17,22 @@ import static org.tron.trident.abi.Utils.convert;
 
 import java.util.List;
 import org.tron.trident.abi.TypeReference;
-import org.tron.trident.abi.Utils;
 
-/**
- * Function type.
- */
-
-public class Function {
-
+/** CustomError wrapper type. */
+public class CustomError {
   private String name;
-  private List<Type> inputParameters;
-  private List<TypeReference<Type>> outputParameters;
+  private List<TypeReference<Type>> parameters;
 
-  public Function(
-      String name, List<Type> inputParameters, List<TypeReference<?>> outputParameters) {
+  public CustomError(String name, List<TypeReference<?>> parameters) {
     this.name = name;
-    this.inputParameters = inputParameters;
-    this.outputParameters = Utils.convert(outputParameters);
+    this.parameters = convert(parameters);
   }
 
   public String getName() {
     return name;
   }
 
-  public List<Type> getInputParameters() {
-    return inputParameters;
-  }
-
-  public List<TypeReference<Type>> getOutputParameters() {
-    return outputParameters;
+  public List<TypeReference<Type>> getParameters() {
+    return parameters;
   }
 }

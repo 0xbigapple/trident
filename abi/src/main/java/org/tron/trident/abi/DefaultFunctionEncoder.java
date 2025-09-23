@@ -13,10 +13,14 @@
 
 package org.tron.trident.abi;
 
+import static org.tron.trident.abi.Utils.staticStructNestedPublicFieldsFlatList;
+
 import java.math.BigInteger;
 import java.util.List;
+import org.tron.trident.abi.datatypes.DynamicStruct;
 import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.StaticArray;
+import org.tron.trident.abi.datatypes.StaticStruct;
 import org.tron.trident.abi.datatypes.Type;
 import org.tron.trident.abi.datatypes.Uint;
 
@@ -41,7 +45,7 @@ public class DefaultFunctionEncoder extends FunctionEncoder {
   }
 
   private static String encodeParameters(
-      final List<Type> parameters, final StringBuilder result) {
+          final List<Type> parameters, final StringBuilder result) {
 
     int dynamicDataOffset = getLength(parameters) * Type.MAX_BYTE_LENGTH;
     final StringBuilder dynamicData = new StringBuilder();
@@ -51,7 +55,7 @@ public class DefaultFunctionEncoder extends FunctionEncoder {
 
       if (TypeEncoder.isDynamic(parameter)) {
         final String encodedDataOffset =
-            TypeEncoder.encodeNumeric(new Uint(BigInteger.valueOf(dynamicDataOffset)));
+                TypeEncoder.encodeNumeric(new Uint(BigInteger.valueOf(dynamicDataOffset)));
         result.append(encodedDataOffset);
         dynamicData.append(encodedValue);
         dynamicDataOffset += encodedValue.length() >> 1;
@@ -64,11 +68,39 @@ public class DefaultFunctionEncoder extends FunctionEncoder {
     return result.toString();
   }
 
+  public String encodeWithSelector(String methodId, List<Type> parameters) {
+    final StringBuilder result = new StringBuilder(methodId);
+
+    return encodeParameters(parameters, result);
+  }
+
+  @Override
+  protected String encodePackedParameters(List<Type> parameters) {
+    final StringBuilder result = new StringBuilder();
+    for (Type parameter : parameters) {
+      result.append(TypeEncoder.encodePacked(parameter));
+    }
+    return result.toString();
+  }
+
+  @SuppressWarnings("unchecked")
   private static int getLength(final List<Type> parameters) {
     int count = 0;
     for (final Type type : parameters) {
-      if (type instanceof StaticArray) {
-        count += ((StaticArray) type).getValue().size();
+      if (type instanceof StaticArray
+              && StaticStruct.class.isAssignableFrom(
+              ((StaticArray) type).getComponentType())) {
+        count +=
+                staticStructNestedPublicFieldsFlatList(
+                        ((StaticArray) type).getComponentType())
+                        .size()
+                        * ((StaticArray) type).getValue().size();
+      } else if (type instanceof StaticArray
+              && DynamicStruct.class.isAssignableFrom(
+              ((StaticArray) type).getComponentType())) {
+        count++;
+      } else if (type instanceof StaticArray) {
+        count += getLength(((StaticArray) type).getValue());
       } else {
         count++;
       }

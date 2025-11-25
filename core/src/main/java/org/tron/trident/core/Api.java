@@ -8,6 +8,7 @@ import org.tron.trident.abi.datatypes.Function;
 import org.tron.trident.abi.datatypes.Type;
 import org.tron.trident.api.GrpcAPI.NumberMessage;
 import org.tron.trident.api.GrpcAPI.TransactionIdList;
+import org.tron.trident.core.account.AccountPermissions;
 import org.tron.trident.core.contract.Contract;
 import org.tron.trident.core.exceptions.IllegalException;
 import org.tron.trident.core.key.KeyPair;
@@ -192,6 +193,8 @@ public interface Api {
 
   WitnessList listWitnesses(NodeType... nodeType);
 
+  WitnessList getPaginatedNowWitnessList(long offset, long limit, NodeType... nodeType);
+
   ExchangeList listExchanges(NodeType... nodeType);
 
   Exchange getExchangeById(String id, NodeType... nodeType) throws IllegalException;
@@ -217,6 +220,14 @@ public interface Api {
   TransactionExtention unfreezeAsset(String ownerAddress) throws IllegalException;
 
   TransactionExtention accountPermissionUpdate(AccountPermissionUpdateContract contract)
+      throws IllegalException;
+
+  TransactionExtention accountPermissionUpdate(
+      String ownerAddress,
+      AccountPermissions accountPermissions)
+      throws IllegalException;
+
+  AccountPermissions getAccountPermissions(String address, NodeType... nodeType)
       throws IllegalException;
 
   TransactionSignWeight getTransactionSignWeight(Transaction trx);

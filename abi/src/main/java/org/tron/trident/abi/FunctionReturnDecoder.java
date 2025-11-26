@@ -35,7 +35,7 @@ import org.tron.trident.abi.spi.FunctionReturnDecoderProvider;
  */
 public abstract class FunctionReturnDecoder {
 
-  private static FunctionReturnDecoder decoder;
+  private static final FunctionReturnDecoder decoder;
 
   static {
     ServiceLoader<FunctionReturnDecoderProvider> loader =

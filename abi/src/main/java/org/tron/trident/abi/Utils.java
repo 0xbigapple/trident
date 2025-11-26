@@ -316,8 +316,6 @@ public class Utils {
             .collect(Collectors.toList());
   }
 
-
-
   /** Support java version < 8 Copied from {@link Class#getTypeName()}. */
   private static String getClassName(Class type) {
     if (type.isArray()) {

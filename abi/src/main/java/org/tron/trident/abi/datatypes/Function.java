@@ -17,7 +17,6 @@ import static org.tron.trident.abi.Utils.convert;
 
 import java.util.List;
 import org.tron.trident.abi.TypeReference;
-import org.tron.trident.abi.Utils;
 
 /**
  * Function type.
@@ -33,7 +32,7 @@ public class Function {
       String name, List<Type> inputParameters, List<TypeReference<?>> outputParameters) {
     this.name = name;
     this.inputParameters = inputParameters;
-    this.outputParameters = Utils.convert(outputParameters);
+    this.outputParameters = convert(outputParameters);
   }
 
   public String getName() {

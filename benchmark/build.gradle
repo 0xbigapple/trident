@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.2'
+}
+
+dependencies {
+    implementation 'io.grpc:grpc-inprocess:1.75.0'
+
+    // SDK 本体
+    jmh project(':core')
+
+    // JMH
+    jmh 'org.openjdk.jmh:jmh-core:1.37'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+
+    // gRPC mock
+    jmh 'io.grpc:grpc-netty-shaded:1.75.0'
+    jmh 'io.grpc:grpc-protobuf:1.75.0'
+    jmh 'io.grpc:grpc-stub:1.75.0'
+    jmh 'io.grpc:grpc-inprocess:1.75.0'
+
+    // 工具
+    jmh 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+}

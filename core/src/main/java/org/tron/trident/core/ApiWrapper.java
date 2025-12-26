@@ -174,6 +174,14 @@ public class ApiWrapper implements Api {
   @Getter
   private long expireTimeStamp = -1;
 
+  public ApiWrapper(ManagedChannel channel, ManagedChannel channelSolidity, String hexPrivateKey) {
+    this.channel = channel;
+    this.channelSolidity = channelSolidity;
+    blockingStub = WalletGrpc.newBlockingStub(channel);
+    blockingStubSolidity = WalletSolidityGrpc.newBlockingStub(channelSolidity);
+    keyPair = KeyPair.generate();
+  }
+
   public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey) {
     channel = ManagedChannelBuilder.forTarget(grpcEndpoint)
         .usePlaintext()

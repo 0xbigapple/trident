@@ -24,8 +24,8 @@ public class Proto2Json {
         Class<? extends Message> clazz =
             ContractRouter.route(contract.getType());
         if (clazz != null) {
-              contractJson = JSONObject
-                  .parseObject(JsonFormat.printToString(contractParameter.unpack(clazz)));
+          contractJson = JSONObject
+              .parseObject(JsonFormat.printToString(contractParameter.unpack(clazz)));
         }
 
         JSONObject parameter = new JSONObject();

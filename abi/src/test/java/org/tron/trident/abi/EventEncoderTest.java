@@ -27,11 +27,11 @@ public class EventEncoderTest {
   public void testBuildEventSignature() {
     assertEquals(
         EventEncoder.buildEventSignature("Deposit(address,hash256,uint256)"),
-        ("0x50cb9fe53daa9737b786ab3646f04d0150dc50ef4e75f59509d83667ad5adb20"));
+        ("50cb9fe53daa9737b786ab3646f04d0150dc50ef4e75f59509d83667ad5adb20"));
 
     assertEquals(
         EventEncoder.buildEventSignature("Notify(uint256,uint256)"),
-        ("0x71e71a8458267085d5ab16980fd5f114d2d37f232479c245d523ce8d23ca40ed"));
+        ("71e71a8458267085d5ab16980fd5f114d2d37f232479c245d523ce8d23ca40ed"));
   }
 
   @Test
@@ -46,7 +46,7 @@ public class EventEncoderTest {
 
     assertEquals(
         EventEncoder.encode(event),
-        "0x71e71a8458267085d5ab16980fd5f114d2d37f232479c245d523ce8d23ca40ed");
+        "71e71a8458267085d5ab16980fd5f114d2d37f232479c245d523ce8d23ca40ed");
   }
 
   @Test

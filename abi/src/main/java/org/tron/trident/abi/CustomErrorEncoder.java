@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.tron.trident.abi.datatypes.CustomError;
 import org.tron.trident.abi.datatypes.Type;
+import org.tron.trident.crypto.Hash;
+import org.tron.trident.utils.Numeric;
 
 /**
  * Ethereum custom error encoding. Further limited details are available <a
@@ -15,7 +17,7 @@ public class CustomErrorEncoder {
   }
 
   public static String encode(CustomError error) {
-    return EventEncoder.buildEventSignature(
+    return calculateSignatureHash(
         buildErrorSignature(error.getName(), error.getParameters()));
   }
 
@@ -33,6 +35,8 @@ public class CustomErrorEncoder {
   }
 
   public static String calculateSignatureHash(String errorSignature) {
-    return EventEncoder.buildEventSignature(errorSignature);
+    byte[] input = errorSignature.getBytes();
+    byte[] hash = Hash.sha3(input);
+    return Numeric.toHexString(hash).substring(2);
   }
 }

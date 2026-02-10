@@ -44,6 +44,30 @@ public class DefaultFunctionEncoder extends FunctionEncoder {
     return encodeParameters(parameters, new StringBuilder());
   }
 
+  private static String encodeParameters(
+      final List<Type> parameters, final StringBuilder result) {
+
+    int dynamicDataOffset = getLength(parameters) * Type.MAX_BYTE_LENGTH;
+    final StringBuilder dynamicData = new StringBuilder();
+
+    for (Type parameter : parameters) {
+      final String encodedValue = TypeEncoder.encode(parameter);
+
+      if (TypeEncoder.isDynamic(parameter)) {
+        final String encodedDataOffset =
+            TypeEncoder.encodeNumeric(new Uint(BigInteger.valueOf(dynamicDataOffset)));
+        result.append(encodedDataOffset);
+        dynamicData.append(encodedValue);
+        dynamicDataOffset += encodedValue.length() >> 1;
+      } else {
+        result.append(encodedValue);
+      }
+    }
+    result.append(dynamicData);
+
+    return result.toString();
+  }
+
   public String encodeWithSelector(String methodId, List<Type> parameters) {
     final StringBuilder result = new StringBuilder(methodId);
 
@@ -56,30 +80,6 @@ public class DefaultFunctionEncoder extends FunctionEncoder {
     for (Type parameter : parameters) {
       result.append(TypeEncoder.encodePacked(parameter));
     }
-    return result.toString();
-  }
-
-  private static String encodeParameters(
-          final List<Type> parameters, final StringBuilder result) {
-
-    int dynamicDataOffset = getLength(parameters) * Type.MAX_BYTE_LENGTH;
-    final StringBuilder dynamicData = new StringBuilder();
-
-    for (Type parameter : parameters) {
-      final String encodedValue = TypeEncoder.encode(parameter);
-
-      if (TypeEncoder.isDynamic(parameter)) {
-        final String encodedDataOffset =
-                TypeEncoder.encodeNumeric(new Uint(BigInteger.valueOf(dynamicDataOffset)));
-        result.append(encodedDataOffset);
-        dynamicData.append(encodedValue);
-        dynamicDataOffset += encodedValue.length() >> 1;
-      } else {
-        result.append(encodedValue);
-      }
-    }
-    result.append(dynamicData);
-
     return result.toString();
   }
 

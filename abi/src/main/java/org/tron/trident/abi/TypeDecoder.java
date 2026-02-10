@@ -72,14 +72,20 @@ public class TypeDecoder {
   static final int MAX_BYTE_LENGTH_FOR_HEX_STRING = Type.MAX_BYTE_LENGTH << 1;
 
   public static Type instantiateType(String solidityType, Object value)
-      throws InvocationTargetException, NoSuchMethodException, InstantiationException,
-      IllegalAccessException, ClassNotFoundException {
+      throws InvocationTargetException,
+      NoSuchMethodException,
+      InstantiationException,
+      IllegalAccessException,
+      ClassNotFoundException {
     return instantiateType(makeTypeReference(solidityType), value);
   }
 
   public static Type instantiateType(TypeReference ref, Object value)
-      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
-      InstantiationException, ClassNotFoundException {
+      throws NoSuchMethodException,
+      IllegalAccessException,
+      InvocationTargetException,
+      InstantiationException,
+      ClassNotFoundException {
     Class rc = ref.getClassType();
     if (Array.class.isAssignableFrom(rc)) {
       return instantiateArrayType(ref, value);
@@ -188,8 +194,11 @@ public class TypeDecoder {
   }
 
   static Type instantiateArrayType(TypeReference ref, Object value)
-      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
-      InstantiationException, ClassNotFoundException {
+      throws NoSuchMethodException,
+      IllegalAccessException,
+      InvocationTargetException,
+      InstantiationException,
+      ClassNotFoundException {
     List values;
     if (value instanceof List) {
       values = (List) value;
@@ -223,8 +232,11 @@ public class TypeDecoder {
   }
 
   static Type instantiateAtomicType(Class<?> referenceClass, Object value)
-      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
-      InstantiationException, ClassNotFoundException {
+      throws NoSuchMethodException,
+      IllegalAccessException,
+      InvocationTargetException,
+      InstantiationException,
+      ClassNotFoundException {
     Object constructorArg = null;
     if (NumericType.class.isAssignableFrom(referenceClass)) {
       constructorArg = asBigInteger(value);
@@ -368,6 +380,7 @@ public class TypeDecoder {
             return instantiateStruct(typeReference, elements);
           }
         };
+
     if (typeReference.getInnerTypes() != null) {
       return decodeStaticStructElementFromInnerTypes(input, offset, typeReference, function);
     }
@@ -431,6 +444,7 @@ public class TypeDecoder {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static <T extends Type> T decodeStaticStructElement(
       final String input,
       final int offset,
@@ -473,7 +487,8 @@ public class TypeDecoder {
       return consumer.apply(elements, typeName);
     } catch (ClassNotFoundException e) {
       throw new UnsupportedOperationException(
-          "Unable to access parameterized type " + typeReference.getType().getTypeName(),
+          "Unable to access parameterized type "
+              + Utils.getTypeName(typeReference.getType()),
           e);
     }
   }
@@ -513,16 +528,16 @@ public class TypeDecoder {
   }
 
   public static <T extends Type> T decodeDynamicStruct(
-      String input, int offset, TypeReference<T> typeReference) throws ClassNotFoundException {
+      String input, int offset, TypeReference<T> typeReference)
+      throws ClassNotFoundException {
 
     BiFunction<List<T>, String, T> function =
         (elements, typeName) -> {
           if (elements.isEmpty()) {
             throw new UnsupportedOperationException(
                 "Zero length fixed array is invalid type");
-          } else {
-            return instantiateStruct(typeReference, elements);
           }
+          return instantiateStruct(typeReference, elements);
         };
 
     if (typeReference.getClassType().isAssignableFrom(DynamicStruct.class)
@@ -535,7 +550,6 @@ public class TypeDecoder {
   }
 
   private static class ParameterOffsetTracker<T extends Type> {
-
     public final Map<Integer, T> parameters;
     public final List<Integer> parameterOffsets;
     public int staticOffset;
@@ -557,7 +571,6 @@ public class TypeDecoder {
       ParameterOffsetTracker<T> getDynamicOffsetsAndNonDynamicParameters(
         final String input, final int offset, final TypeReference<T> typeReference)
         throws ClassNotFoundException {
-
     ParameterOffsetTracker<T> tracker =
         new ParameterOffsetTracker<T>(new HashMap<>(), new ArrayList<>(), 0, 0);
 
@@ -644,6 +657,7 @@ public class TypeDecoder {
     return consumer.apply(parameters, typeName);
   }
 
+  @SuppressWarnings("unchecked")
   private static <T extends Type> T decodeDynamicStructElements(
       final String input,
       final int offset,
@@ -661,7 +675,6 @@ public class TypeDecoder {
         final T value;
         final int beginIndex = offset + staticOffset;
         if (isDynamic(declaredField)) {
-          final boolean isOnlyParameterInStruct = length == 1;
           final int parameterOffset =
               decodeDynamicStructDynamicParameterOffset(
                   input.substring(beginIndex, beginIndex + 64))
@@ -725,7 +738,8 @@ public class TypeDecoder {
       return consumer.apply(elements, typeName);
     } catch (ClassNotFoundException e) {
       throw new UnsupportedOperationException(
-          "Unable to access parameterized type " + typeReference.getType().getTypeName(),
+          "Unable to access parameterized type "
+              + Utils.getTypeName(typeReference.getType()),
           e);
     }
   }
@@ -741,7 +755,8 @@ public class TypeDecoder {
       final int parameterOffset,
       final int parameterLength,
       final Class<T> declaredField,
-      final Class<T> parameter) throws ClassNotFoundException {
+      final Class<T> parameter)
+      throws ClassNotFoundException {
     final String dynamicElementData =
         input.substring(parameterOffset, parameterOffset + parameterLength);
 

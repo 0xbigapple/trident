@@ -18,11 +18,11 @@ public class CustomErrorEncoderTest {
   public void testCalculateSignatureHash() {
     assertEquals(
         CustomErrorEncoder.calculateSignatureHash("InvalidAccess(address,string,uint256)"),
-        ("0xcb5157bf1b439b9573ea7a95f7c00cc33f832ed728345c2bd29146ce58bbab57"));
+        ("cb5157bf1b439b9573ea7a95f7c00cc33f832ed728345c2bd29146ce58bbab57"));
 
     assertEquals(
         CustomErrorEncoder.calculateSignatureHash("RandomError(address[],bytes)"),
-        ("0xbf37b77ddf0fbbf29ee6a3ebda3d177c2d438123b10571806c57958230d9f905"));
+        ("bf37b77ddf0fbbf29ee6a3ebda3d177c2d438123b10571806c57958230d9f905"));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class CustomErrorEncoderTest {
 
     assertEquals(
         CustomErrorEncoder.encode(error),
-        "0xcb5157bf1b439b9573ea7a95f7c00cc33f832ed728345c2bd29146ce58bbab57");
+        "cb5157bf1b439b9573ea7a95f7c00cc33f832ed728345c2bd29146ce58bbab57");
   }
 
   @Test

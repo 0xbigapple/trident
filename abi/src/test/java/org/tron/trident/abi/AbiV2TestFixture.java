@@ -121,6 +121,10 @@ public class AbiV2TestFixture {
   public static final String FUNC_setArrayOfStructWithArraysFunction =
       "setArrayOfStructWithArraysFunction";
 
+  public static final String FUNC_SETGETMULTIDIMSTATICARRAY = "setGetMultiDimStaticArray";
+  
+  public static final String FUNC_SETGETMULTIDIMDYNAMICARRAY = "setGetMultiDimDynamicArray";
+
   public static class Foo extends DynamicStruct {
     public String id;
 
@@ -920,4 +924,39 @@ public class AbiV2TestFixture {
                               "0x2222222222222222222222222222222222222222",
                               "0x3333333333333333333333333333333333333333"))))),
           Collections.<TypeReference<?>>emptyList());
+
+  public static final Function setGetMultiDimStaticArrayFunction =
+      new Function(FUNC_SETGETMULTIDIMSTATICARRAY,
+          Collections.singletonList(new StaticArray3<>(
+              (Class)StaticArray2.class,
+              new StaticArray2<>(Uint256.class, new Uint256(1), new Uint256(2)),
+              new StaticArray2<>(Uint256.class, new Uint256(3), new Uint256(4)),
+              new StaticArray2<>(Uint256.class, new Uint256(5), new Uint256(6)))),
+          Collections.singletonList(new TypeReference<StaticArray3<StaticArray2<Uint256>>>() {})
+      );
+
+  public static final Function setGetMultiDimDynamicArrayFunction =
+      new Function(FUNC_SETGETMULTIDIMDYNAMICARRAY,
+          Collections.singletonList(new DynamicArray<>(
+              (Class)DynamicArray.class,
+              new DynamicArray<>(
+                  (Class)DynamicArray.class,
+                  new DynamicArray<>(
+                  Uint256.class, 
+                      new Uint256(1))),
+              new DynamicArray<>(
+                  (Class)DynamicArray.class,
+                  new DynamicArray<>(
+                    Uint256.class, 
+                      new Uint256(2), new Uint256(3))),
+              new DynamicArray<>(
+                  (Class)DynamicArray.class,
+                  new DynamicArray<>(
+                      Uint256.class, 
+                      new Uint256(4), new Uint256(5)),
+                  new DynamicArray<>(
+                      Uint256.class, 
+                      new Uint256(6), new Uint256(7), new Uint256(8))))),
+          Collections.singletonList(new TypeReference<DynamicArray<DynamicArray<DynamicArray<Uint256>>>>() {})
+      );
 }

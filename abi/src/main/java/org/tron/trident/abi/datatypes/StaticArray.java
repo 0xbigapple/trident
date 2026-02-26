@@ -50,6 +50,7 @@ public abstract class StaticArray<T extends Type> extends Array<T> {
   public StaticArray(int expectedSize, List<T> values) {
     super(
             StructType.class.isAssignableFrom(values.get(0).getClass())
+            || Array.class.isAssignableFrom(values.get(0).getClass())
                     ? (Class<T>) values.get(0).getClass()
                     : (Class<T>) AbiTypes.getType(values.get(0).getTypeAsString()),
             values);
@@ -85,6 +86,8 @@ public abstract class StaticArray<T extends Type> extends Array<T> {
   public String getTypeAsString() {
     String type;
     if (!value.isEmpty() && StructType.class.isAssignableFrom(value.get(0).getClass())) {
+      type = value.get(0).getTypeAsString();
+    } else if (!value.isEmpty() && Array.class.isAssignableFrom(value.get(0).getClass())) {
       type = value.get(0).getTypeAsString();
     } else {
       type = AbiTypes.getTypeAString(getComponentType());

@@ -27,6 +27,7 @@ public class DynamicArray<T extends Type> extends Array<T> {
   public DynamicArray(T... values) {
     super(
             StructType.class.isAssignableFrom(values[0].getClass())
+                || Array.class.isAssignableFrom(values[0].getClass())
                     ? (Class<T>) values[0].getClass()
                     : (Class<T>) AbiTypes.getType(values[0].getTypeAsString()),
             values);
@@ -82,7 +83,7 @@ public class DynamicArray<T extends Type> extends Array<T> {
     } else {
       if (StructType.class.isAssignableFrom(value.get(0).getClass())) {
         type = value.get(0).getTypeAsString();
-      } else if (DynamicArray.class.isAssignableFrom(value.get(0).getClass())) {
+      } else if (Array.class.isAssignableFrom(value.get(0).getClass())) {
         type = value.get(0).getTypeAsString();
       } else {
         type = AbiTypes.getTypeAString(getComponentType());

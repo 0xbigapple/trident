@@ -59,9 +59,9 @@ public class AbiV2TestFixture {
 
   public static final String FUNC_GETFOODYNAMICARRAY = "getFooDynamicArray";
 
-  public static final String FUNC_GETNARBARFOONARFOODYNAMICARRAY = "getNarBarFooNarFooArrays";
+  public static final String FUNC_GETNARBARFOONARFOODYNAMICARRAY = "getNarBarFooNarFooDynamicArrays";
 
-  public static final String FUNC_IDNARBARFOONARFOODYNAMICARRAY = "idNarBarFooNarFooArrays";
+  public static final String FUNC_IDNARBARFOONARFOODYNAMICARRAY = "idNarBarFooNarFooDynamicArrays";
 
   public static final String FUNC_GETBARDYNAMICARRAY = "getBarDynamicArray";
 

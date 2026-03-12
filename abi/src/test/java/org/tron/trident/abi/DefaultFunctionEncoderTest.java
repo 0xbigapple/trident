@@ -95,7 +95,7 @@ public class DefaultFunctionEncoderTest {
 
     assertEquals(
         "someFunc((((string,string)[])[],uint256))",
-        FunctionEncoder.buildMethodSignature("someFunc", Arrays.asList(nazz)));
+        FunctionEncoder.buildMethodSignature("someFunc", Arrays.asList(nazz2)));
 
     // correct handling of empty list of static struct
     AbiV2TestFixture.Barr barr =
@@ -333,7 +333,7 @@ public class DefaultFunctionEncoderTest {
   @Test
   public void testMultiReturnStaticDynamicArrayWithStaticDynamicStructs() {
     String encodedInput =
-        "0f8676d2"
+        "1f9218db"
             + "0000000000000000000000000000000000000000000000000000000000000140"
             + "0000000000000000000000000000000000000000000000000000000000000000"
             + "0000000000000000000000000000000000000000000000000000000000000000"
@@ -979,7 +979,6 @@ public class DefaultFunctionEncoderTest {
   public void testEncodeMultiDimDynamicArrayFunction() {
     //setGetMultiDimDynamicArrayFunction(uint256[][][])
     // [[[1]],[[2,3]],[[4,5],[6,7,8]]]
-    String methodId = FunctionEncoder.buildMethodId("setGetMultiDimDynamicArray(uint256[][][])");
     String expected =
         "bec12ef4"
         + "0000000000000000000000000000000000000000000000000000000000000020"

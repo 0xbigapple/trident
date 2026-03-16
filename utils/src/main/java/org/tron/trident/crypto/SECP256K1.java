@@ -156,10 +156,12 @@ public class SECP256K1 {
    */
   private static BigInteger recoverFromSignature(
       final int recId, final BigInteger r, final BigInteger s, final Bytes32 dataHash) {
+    Preconditions.checkNotNull(r, "r must not be null");
+    Preconditions.checkNotNull(s, "s must not be null");
+    Preconditions.checkNotNull(dataHash, "dataHash must not be null");
     Preconditions.checkArgument(recId >= 0, "recId must be greater than or equal to 0");
     Preconditions.checkArgument(r.signum() >= 0, "r must be greater than or equal to 0");
     Preconditions.checkArgument(s.signum() >= 0, "s must be greater than or equal to 0");
-    Preconditions.checkNotNull(dataHash, "dataHash must not be null");
 
     // 1.0 For j from 0 to h (h == recId here and the loop is outside this function)
     // 1.1 Let x = r + jn
@@ -326,6 +328,7 @@ public class SECP256K1 {
     }
 
     public static PrivateKey create(final String hexKey) {
+      Preconditions.checkNotNull(hexKey, "hexKey must not be null");
       Preconditions.checkArgument(hexKey.length() == 64, "hexKey must be 64 characters long");
       return create(Bytes32.fromHexString(hexKey));
     }
@@ -378,7 +381,7 @@ public class SECP256K1 {
      * the privateKey it is better for security reasons to just use toString().
      */
     public String toStringWithPrivateKey() {
-      return encoded.toHexString();
+      return encoded.toString();
     }
   }
 
@@ -605,6 +608,7 @@ public class SECP256K1 {
     }
 
     public static Signature decode(final Bytes bytes) {
+      Preconditions.checkNotNull(bytes, "bytes must not be null");
       Preconditions.checkArgument(bytes.size() == BYTES_REQUIRED,
           "encoded SECP256K1 signature must be 65 bytes long");
 

@@ -72,7 +72,7 @@ public class CustomErrorEncoderTest {
 
     assertEquals(
         "DynamicArrayError((((string,string)[])[],uint256)[])",
-        EventEncoder.buildMethodSignature("DynamicArrayError", convert(parameters)));
+        CustomErrorEncoder.buildErrorSignature("DynamicArrayError", convert(parameters)));
   }
 
 }

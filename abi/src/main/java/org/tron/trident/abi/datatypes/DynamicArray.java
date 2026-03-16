@@ -26,7 +26,9 @@ public class DynamicArray<T extends Type> extends Array<T> {
   @SuppressWarnings({"unchecked"})
   public DynamicArray(T... values) {
     super(
-            StructType.class.isAssignableFrom(values[0].getClass())
+        values.length == 0
+            ? (Class<T>) Type.class
+            : StructType.class.isAssignableFrom(values[0].getClass())
                 || Array.class.isAssignableFrom(values[0].getClass())
                     ? (Class<T>) values[0].getClass()
                     : (Class<T>) AbiTypes.getType(values[0].getTypeAsString()),
@@ -37,7 +39,9 @@ public class DynamicArray<T extends Type> extends Array<T> {
   @SuppressWarnings("unchecked")
   public DynamicArray(List<T> values) {
     super(
-            StructType.class.isAssignableFrom(values.get(0).getClass())
+            values.isEmpty()
+                ? (Class<T>) Type.class
+                : StructType.class.isAssignableFrom(values.get(0).getClass())
                 || Array.class.isAssignableFrom(values.get(0).getClass())
                     ? (Class<T>) values.get(0).getClass()
                     : (Class<T>) AbiTypes.getType(values.get(0).getTypeAsString()),

@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * complex type encoding/decoding and packed encoding.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class AbiV2ContractTest extends BaseTest{
+class AbiV2ContractTest {
   // 1. Compile AbiV2TestContract.sol to get its ABI and Bytecode.
   // 2. Provide a private key for an account on the Nile testnet with some TRX.
   private static final String CONTRACT_ABI = "[\n"
@@ -526,6 +526,22 @@ class AbiV2ContractTest extends BaseTest{
     }
   }
 
+  static ApiWrapper client;
+  static String testAddress;
+
+  @BeforeAll
+  static void setUp() {
+    client = ApiWrapper.ofNile(ApiWrapper.generateAddress().toPrivateKey());
+    testAddress = client.keyPair.toBase58CheckAddress();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    if (client != null) {
+      client.close();
+    }
+  }
+
   @Test
   @Order(0)
   @Disabled("has deployed")
@@ -537,7 +553,7 @@ class AbiV2ContractTest extends BaseTest{
 
     Transaction signTransaction = client.signTransaction(transactionExtention.getTransaction());
     String txId = client.broadcastTransaction(signTransaction);
-    System.out.println("Deploy transaction ID: " + txId);
+//    System.out.println("Deploy transaction ID: " + txId);
 
     // Wait for deployment to be confirmed (adjust sleep time if needed for the network)
 
@@ -547,7 +563,7 @@ class AbiV2ContractTest extends BaseTest{
     String contractAddress = Base58Check.bytesToBase58(transactionInfo.getContractAddress().toByteArray());
 
     assertNotNull(contractAddress, "Contract deployment failed or was not confirmed in time.");
-    System.out.println("Contract deployed to address: " + contractAddress);
+//    System.out.println("Contract deployed to address: " + contractAddress);
     }
 
 
@@ -618,6 +634,7 @@ class AbiV2ContractTest extends BaseTest{
   @Test
   @Order(3)
   @DisplayName("Test encoding and decoding of a nested struct")
+  @Disabled("add private key to enable this case")
   void testNestedStruct() throws Exception {
     StaticInfo staticPart = new StaticInfo(new Uint256(202), new Address(testAddress));
     DynamicInfo dynamicPart = new DynamicInfo(

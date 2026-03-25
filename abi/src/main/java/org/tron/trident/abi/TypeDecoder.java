@@ -989,6 +989,8 @@ public class TypeDecoder {
                 (T)
                     TypeDecoder.decodeStaticArray(
                         input, currOffset, staticReference, staticLength);
+            // In ABI, StaticArrays are encoded inline without any length prefix.
+            // Therefore, the exact offset advance required is derived from the true padded byte length.
             currOffset +=
                 (value.bytes32PaddedLength() / Type.MAX_BYTE_LENGTH)
                     * MAX_BYTE_LENGTH_FOR_HEX_STRING;

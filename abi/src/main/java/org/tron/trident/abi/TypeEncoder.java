@@ -50,6 +50,15 @@ public class TypeEncoder {
   private TypeEncoder() {
   }
 
+  /**
+   * Determines if a given ABI type is dynamic.
+   * According to the ABI specification, dynamic types require an offset pointer in the tuple header
+   * (occupying exactly 1 slot / 32 bytes) rather than being encoded inline. This method recursively
+   * checks StaticArrays to properly identify if they contain any dynamic elements.
+   *
+   * @param parameter The ABI type parameter to check.
+   * @return true if the type is dynamic, false otherwise.
+   */
   static boolean isDynamic(Type parameter) {
     if (parameter instanceof DynamicBytes
         || parameter instanceof Utf8String

@@ -1247,4 +1247,32 @@ public class TypeDecoderTest {
     row1 = staticArray3StaticArray3.getValue().get(1).getValue().get(1);
     assertEquals(row1.getValue().get(1), (new Uint256(2)));
   }
+
+  @Test
+  public void testDecodeNestedStaticArray() {
+    // uint256[2][2]
+    // Element 1: uint256[2] = [64, 2]
+    // Element 2: uint256[2] = [3, 4]
+    String input = "0000000000000000000000000000000000000000000000000000000000000040" // 64
+                 + "0000000000000000000000000000000000000000000000000000000000000002" // 2
+                 + "0000000000000000000000000000000000000000000000000000000000000003" // 3
+                 + "0000000000000000000000000000000000000000000000000000000000000004"; // 4
+
+    // Using TypeReference to define uint256[2][2]
+    TypeReference.StaticArrayTypeReference<StaticArray2<StaticArray2<Uint256>>> typeRef = 
+        new TypeReference.StaticArrayTypeReference<StaticArray2<StaticArray2<Uint256>>>(2) {
+          @Override
+          public TypeReference getSubTypeReference() {
+            return new TypeReference.StaticArrayTypeReference<StaticArray2<Uint256>>(2) {};
+          }
+        };
+
+    StaticArray2<StaticArray2<Uint256>> result = TypeDecoder.decodeStaticArray(input, 0, typeRef, 2);
+
+    assertEquals(2, result.getValue().size());
+    assertEquals(java.math.BigInteger.valueOf(64), result.getValue().get(0).getValue().get(0).getValue());
+    assertEquals(java.math.BigInteger.valueOf(2), result.getValue().get(0).getValue().get(1).getValue());
+    assertEquals(java.math.BigInteger.valueOf(3), result.getValue().get(1).getValue().get(0).getValue());
+    assertEquals(java.math.BigInteger.valueOf(4), result.getValue().get(1).getValue().get(1).getValue());
+  }
 }

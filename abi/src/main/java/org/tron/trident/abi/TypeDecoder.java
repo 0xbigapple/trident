@@ -990,7 +990,7 @@ public class TypeDecoder {
                     TypeDecoder.decodeStaticArray(
                         input, currOffset, staticReference, staticLength);
             currOffset +=
-                ((decodeUintAsInt(input, currOffset) / Type.MAX_BYTE_LENGTH) + 2)
+                (value.bytes32PaddedLength() / Type.MAX_BYTE_LENGTH)
                     * MAX_BYTE_LENGTH_FOR_HEX_STRING;
           }
           elements.add(value);

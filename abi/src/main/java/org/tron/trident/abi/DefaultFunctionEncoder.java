@@ -87,20 +87,21 @@ public class DefaultFunctionEncoder extends FunctionEncoder {
   private static int getLength(final List<Type> parameters) {
     int count = 0;
     for (final Type type : parameters) {
-      if (type instanceof StaticArray
-              && StaticStruct.class.isAssignableFrom(
-              ((StaticArray) type).getComponentType())) {
-        count +=
-                staticStructNestedPublicFieldsFlatList(
-                        ((StaticArray) type).getComponentType())
-                        .size()
-                        * ((StaticArray) type).getValue().size();
-      } else if (type instanceof StaticArray
-              && DynamicStruct.class.isAssignableFrom(
-              ((StaticArray) type).getComponentType())) {
+      if (TypeEncoder.isDynamic(type)) {
         count++;
       } else if (type instanceof StaticArray) {
-        count += getLength(((StaticArray) type).getValue());
+        if (StaticStruct.class.isAssignableFrom(
+                ((StaticArray) type).getComponentType())) {
+          count +=
+                  staticStructNestedPublicFieldsFlatList(
+                          ((StaticArray) type).getComponentType())
+                          .size()
+                          * ((StaticArray) type).getValue().size();
+        } else {
+          count += getLength(((StaticArray) type).getValue());
+        }
+      } else if (type instanceof StaticStruct) {
+        count += staticStructNestedPublicFieldsFlatList((Class<Type>) type.getClass()).size();
       } else {
         count++;
       }

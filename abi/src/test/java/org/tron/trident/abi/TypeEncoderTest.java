@@ -15,6 +15,7 @@ package org.tron.trident.abi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.tron.trident.abi.TypeEncoder.encode;
 
 import java.math.BigInteger;
@@ -1582,5 +1583,21 @@ public class TypeEncoderTest {
     assertEquals(
         expectedEncoding,
         encode(AbiV2TestFixture.addDynamicBytesArrayFunction.getInputParameters().get(0)));
+  }
+
+  @Test
+  public void testStaticArrayOfDynamicElements() {
+    StaticArray2<Utf8String> string2 = new StaticArray2<>(
+        Utf8String.class,
+        new Utf8String("hello"),
+        new Utf8String("world"));
+    
+    String encoded = TypeEncoder.encode(string2);
+    
+    // In ABI, string[2] is dynamic. Its head should contain offsets.
+    // Head size = 2 * 32 = 64 bytes (0x40 in hex)
+    // The first word should be the offset to the first string: 0x00...0040
+    assertTrue(encoded.startsWith("0000000000000000000000000000000000000000000000000000000000000040"),
+        "StaticArray of Utf8String should be encoded with offsets. Found: " + encoded);
   }
 }

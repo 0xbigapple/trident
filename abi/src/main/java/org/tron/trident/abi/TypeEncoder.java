@@ -51,12 +51,24 @@ public class TypeEncoder {
   }
 
   static boolean isDynamic(Type parameter) {
-    return parameter instanceof DynamicBytes
+    if (parameter instanceof DynamicBytes
         || parameter instanceof Utf8String
         || parameter instanceof DynamicArray
-            || (parameter instanceof StaticArray
-            && DynamicStruct.class.isAssignableFrom(
-            ((StaticArray) parameter).getComponentType()));
+        || parameter instanceof DynamicStruct) {
+      return true;
+    }
+    if (parameter instanceof StaticArray) {
+      StaticArray staticArray = (StaticArray) parameter;
+      if (!staticArray.getValue().isEmpty()) {
+        return isDynamic((Type) staticArray.getValue().get(0));
+      }
+      Class<?> componentType = staticArray.getComponentType();
+      return DynamicBytes.class.isAssignableFrom(componentType)
+          || Utf8String.class.isAssignableFrom(componentType)
+          || DynamicArray.class.isAssignableFrom(componentType)
+          || DynamicStruct.class.isAssignableFrom(componentType);
+    }
+    return false;
   }
 
   @SuppressWarnings("unchecked")
@@ -74,8 +86,7 @@ public class TypeEncoder {
     } else if (parameter instanceof Utf8String) {
       return encodeString((Utf8String) parameter);
     } else if (parameter instanceof StaticArray) {
-      if (DynamicStruct.class.isAssignableFrom(
-              ((StaticArray) parameter).getComponentType())) {
+      if (isDynamic(parameter)) {
         return encodeStaticArrayWithDynamicStruct((StaticArray) parameter);
       } else {
         return encodeArrayValues((StaticArray) parameter);

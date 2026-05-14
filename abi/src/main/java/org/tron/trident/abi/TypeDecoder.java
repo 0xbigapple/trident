@@ -264,7 +264,12 @@ public class TypeDecoder {
 
   static int decodeUintAsInt(String rawInput, int offset) {
     String input = rawInput.substring(offset, offset + MAX_BYTE_LENGTH_FOR_HEX_STRING);
-    return decode(input, 0, Uint.class).getValue().intValue();
+    BigInteger value = decode(input, 0, Uint.class).getValue();
+    if (value.bitLength() > 31) {
+      throw new IllegalArgumentException(
+          "Invalid ABI uint " + value + " exceeds Integer.MAX_VALUE");
+    }
+    return value.intValue();
   }
 
   public static Bool decodeBool(String rawInput, int offset) {
@@ -301,10 +306,18 @@ public class TypeDecoder {
 
   public static DynamicBytes decodeDynamicBytes(String input, int offset) {
     int encodedLength = decodeUintAsInt(input, offset);
-    int hexStringEncodedLength = encodedLength << 1;
-
     int valueOffset = offset + MAX_BYTE_LENGTH_FOR_HEX_STRING;
 
+    // Reject lengths that cannot physically fit in the remaining input.
+    // Also stops `encodedLength << 1` from flipping the sign bit when
+    // encodedLength is in the upper half of the int domain.
+    int remainingHex = input.length() - valueOffset;
+    if (encodedLength < 0 || encodedLength > remainingHex / 2) {
+      throw new IllegalArgumentException(
+          "Invalid ABI dynamic bytes length: " + encodedLength);
+    }
+
+    int hexStringEncodedLength = encodedLength << 1;
     String data = input.substring(valueOffset, valueOffset + hexStringEncodedLength);
     byte[] bytes = Numeric.hexStringToByteArray(data);
 
@@ -573,7 +586,13 @@ public class TypeDecoder {
   }
 
   private static int decodeDynamicStructDynamicParameterOffset(final String input) {
-    return (decodeUintAsInt(input, 0) * 2) + 64;
+    int parameterOffset = decodeUintAsInt(input, 0);
+    try {
+      return Math.addExact(Math.multiplyExact(parameterOffset, 2), 64);
+    } catch (ArithmeticException e) {
+      throw new IllegalArgumentException(
+          "Invalid ABI dynamic struct parameter offset: " + parameterOffset, e);
+    }
   }
 
   static <T extends Type> boolean isDynamic(Class<T> parameter) {
@@ -639,16 +658,28 @@ public class TypeDecoder {
             "Arrays of arrays are not currently supported for external functions, see"
                 + "http://solidity.readthedocs.io/en/develop/types.html#members");
       } else {
+        if (length < 0 || length > input.length() / MAX_BYTE_LENGTH_FOR_HEX_STRING) {
+          throw new IllegalArgumentException(
+              "Invalid ABI array length: " + length);
+        }
         List<T> elements = new ArrayList<>(length);
 
-        for (int i = 0, currOffset = offset;
-            i < length;
-            i++,
-                currOffset +=
-                    getSingleElementLength(input, currOffset, cls)
-                        * MAX_BYTE_LENGTH_FOR_HEX_STRING) {
+        int currOffset = offset;
+        for (int i = 0; i < length; i++) {
           T value = decode(input, currOffset, cls);
           elements.add(value);
+          if (i + 1 < length) {
+            // Compute the next offset in long to absorb any element-length
+            // multiplication that would otherwise overflow int.
+            long nextOffset = (long) currOffset
+                + (long) getSingleElementLength(input, currOffset, cls)
+                    * MAX_BYTE_LENGTH_FOR_HEX_STRING;
+            if (nextOffset > input.length()) {
+              throw new IllegalArgumentException(
+                  "Invalid ABI array element offset at index " + i + ": " + nextOffset);
+            }
+            currOffset = (int) nextOffset;
+          }
         }
 
         String typeName = Utils.getSimpleTypeName(cls);

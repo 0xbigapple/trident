@@ -178,4 +178,44 @@ public class TypeDecoderDoSTest {
         () -> TypeDecoder.decodeDynamicArray(
             malicious, 0, new TypeReference<DynamicArray<DynamicBytes>>() {}));
   }
+
+  @Test
+  public void decodeDynamicArray_arrayLengthBoundRespectsOffset() {
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000003"  // length=3
+            + "0000000000000000000000000000000000000000000000000000000000000001"  // elem0
+            + "0000000000000000000000000000000000000000000000000000000000000002"; // elem1 (no elem2!)
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeDynamicArray(
+            malicious, 0, new TypeReference<DynamicArray<Uint256>>() {}));
+  }
+
+  @Test
+  public void decodeDynamicArray_nextOffsetGuardCatchesExactBoundary() {
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000002"  // length=2
+            + "0000000000000000000000000000000000000000000000000000000000000001"; // only elem0
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeDynamicArray(
+            malicious, 0, new TypeReference<DynamicArray<Uint256>>() {}));
+  }
+
+  @Test
+  public void decodeDynamicStruct_rejectsParameterOffsetExceedingInputLength() {
+    String malicious =
+        // p0 byte offset = 0x80 → hex offset 320 (> input.length() = 256)
+        "0000000000000000000000000000000000000000000000000000000000000080"
+            // p1 byte offset = 0x90 → hex offset 352 (also > input.length(),
+            //                                  and > p0 so parameterLength > 0)
+            + "0000000000000000000000000000000000000000000000000000000000000090"
+            // two filler slots so input.length() == 256 hex chars
+            + "0000000000000000000000000000000000000000000000000000000000000001"
+            + "6100000000000000000000000000000000000000000000000000000000000000";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeDynamicStruct(
+            malicious, 0, new TypeReference<TwoStrings>() {}));
+  }
 }

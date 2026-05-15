@@ -381,7 +381,7 @@ public class SECP256K1 {
      * the privateKey it is better for security reasons to just use toString().
      */
     public String toStringWithPrivateKey() {
-      return encoded.toString();
+      return encoded.toUnprefixedHexString();
     }
   }
 

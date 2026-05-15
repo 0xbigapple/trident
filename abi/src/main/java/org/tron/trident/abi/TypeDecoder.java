@@ -571,6 +571,13 @@ public class TypeDecoder {
       final int parameterOffset,
       final int parameterLength,
       final Class<T> declaredField) {
+    if (parameterOffset < 0
+        || parameterLength < 0
+        || (long) parameterOffset + parameterLength > input.length()) {
+      throw new IllegalArgumentException(
+          "Invalid ABI dynamic struct parameter window: offset=" + parameterOffset
+              + ", length=" + parameterLength + ", input=" + input.length());
+    }
     final String dynamicElementData =
         input.substring(parameterOffset, parameterOffset + parameterLength);
 
@@ -658,7 +665,10 @@ public class TypeDecoder {
             "Arrays of arrays are not currently supported for external functions, see"
                 + "http://solidity.readthedocs.io/en/develop/types.html#members");
       } else {
-        if (length < 0 || length > input.length() / MAX_BYTE_LENGTH_FOR_HEX_STRING) {
+        int remainingHex = input.length() - offset;
+        if (length < 0
+            || remainingHex < 0
+            || length > remainingHex / MAX_BYTE_LENGTH_FOR_HEX_STRING) {
           throw new IllegalArgumentException(
               "Invalid ABI array length: " + length);
         }
@@ -674,7 +684,7 @@ public class TypeDecoder {
             long nextOffset = (long) currOffset
                 + (long) getSingleElementLength(input, currOffset, cls)
                     * MAX_BYTE_LENGTH_FOR_HEX_STRING;
-            if (nextOffset > input.length()) {
+            if (nextOffset >= input.length()) {
               throw new IllegalArgumentException(
                   "Invalid ABI array element offset at index " + i + ": " + nextOffset);
             }

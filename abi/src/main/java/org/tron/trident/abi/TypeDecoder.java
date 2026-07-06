@@ -385,7 +385,18 @@ public class TypeDecoder {
       return decodeStaticStructElementFromInnerTypes(input, offset, typeReference, function);
     }
 
-    return decodeStaticStructElement(input, offset, typeReference, function);
+    // Reflection path (TypeReference.create(MyStruct.class)): synthesize the field
+    // TypeReferences from the struct constructor and reuse the innerTypes implementation,
+    // so both entry points share one decode algorithm.
+    try {
+      return decodeStaticStructElementFromInnerTypes(
+          input, offset, Utils.withStructInnerTypes(typeReference), function);
+    } catch (ClassNotFoundException e) {
+      throw new UnsupportedOperationException(
+          "Unable to access parameterized type "
+              + Utils.getTypeName(typeReference.getType()),
+          e);
+    }
   }
 
   private static int extractStaticArrayLength(TypeReference<?> typeReference) {
@@ -442,55 +453,6 @@ public class TypeDecoder {
   }
 
   @SuppressWarnings("unchecked")
-  private static <T extends Type> T decodeStaticStructElement(
-      final String input,
-      final int offset,
-      final TypeReference<T> typeReference,
-      final BiFunction<List<T>, String, T> consumer) {
-    try {
-      Class<T> classType = typeReference.getClassType();
-      Constructor<?> constructor = findStructConstructor(classType);
-      final int length = constructor.getParameterCount();
-      List<T> elements = new ArrayList<>(length);
-
-      for (int i = 0, currOffset = offset; i < length; i++) {
-        T value;
-        final Class<T> declaredField = (Class<T>) constructor.getParameterTypes()[i];
-
-        if (StaticStruct.class.isAssignableFrom(declaredField)) {
-          final int nestedStructLength =
-              classType
-                  .getDeclaredFields()[i]
-                  .getType()
-                  .getConstructors()[0]
-                  .getParameters()
-                  .length
-                  * 64;
-          value =
-              decodeStaticStruct(
-                  input.substring(currOffset, currOffset + nestedStructLength),
-                  0,
-                  TypeReference.create(declaredField));
-          currOffset += nestedStructLength;
-        } else {
-          value = decode(input.substring(currOffset, currOffset + 64), 0, declaredField);
-          currOffset += 64;
-        }
-        elements.add(value);
-      }
-
-      String typeName = getSimpleTypeName(classType);
-
-      return consumer.apply(elements, typeName);
-    } catch (ClassNotFoundException e) {
-      throw new UnsupportedOperationException(
-          "Unable to access parameterized type "
-              + Utils.getTypeName(typeReference.getType()),
-          e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
   private static <T extends Type> T instantiateStruct(
       final TypeReference<T> typeReference, final List<T> parameters) {
     try {
@@ -537,13 +499,16 @@ public class TypeDecoder {
           return instantiateStruct(typeReference, elements);
         };
 
-    if (typeReference.getClassType().isAssignableFrom(DynamicStruct.class)
-        && typeReference.getInnerTypes() != null) {
+    if (typeReference.getInnerTypes() != null) {
       return decodeDynamicStructElementsFromInnerTypes(
           input, offset, typeReference, function);
     }
 
-    return decodeDynamicStructElements(input, offset, typeReference, function);
+    // Reflection path (TypeReference.create(MyStruct.class)): synthesize the field
+    // TypeReferences from the struct constructor and reuse the innerTypes implementation,
+    // so both entry points share one decode algorithm.
+    return decodeDynamicStructElementsFromInnerTypes(
+        input, offset, Utils.withStructInnerTypes(typeReference), function);
   }
 
   private static class ParameterOffsetTracker<T extends Type> {
@@ -657,130 +622,6 @@ public class TypeDecoder {
     final List<T> parameters = getDynamicParametersWithTracker(input, typeReference, tracker);
     String typeName = getSimpleTypeName(typeReference.getClassType());
     return consumer.apply(parameters, typeName);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T extends Type> T decodeDynamicStructElements(
-      final String input,
-      final int offset,
-      final TypeReference<T> typeReference,
-      final BiFunction<List<T>, String, T> consumer) {
-    try {
-      final Class<T> classType = typeReference.getClassType();
-      Constructor<?> constructor = findStructConstructor(classType);
-      final int length = constructor.getParameterCount();
-      final Map<Integer, T> parameters = new HashMap<>();
-      int staticOffset = 0;
-      final List<Integer> parameterOffsets = new ArrayList<>();
-      for (int i = 0; i < length; ++i) {
-        final Class<T> declaredField = (Class<T>) constructor.getParameterTypes()[i];
-        final T value;
-        final int beginIndex = offset + staticOffset;
-        if (isDynamic(declaredField)) {
-          final int parameterOffset =
-              decodeDynamicStructDynamicParameterOffset(
-                  input.substring(beginIndex, beginIndex + 64))
-                  + offset;
-          parameterOffsets.add(parameterOffset);
-          staticOffset += 64;
-        } else {
-          if (StaticStruct.class.isAssignableFrom(declaredField)) {
-            value =
-                decodeStaticStruct(
-                    input.substring(beginIndex),
-                    0,
-                    TypeReference.create(declaredField));
-            staticOffset +=
-                staticStructNestedPublicFieldsFlatList((Class<Type>) declaredField)
-                    .size()
-                    * MAX_BYTE_LENGTH_FOR_HEX_STRING;
-          } else {
-            value = decode(input.substring(beginIndex), 0, declaredField);
-            staticOffset += value.bytes32PaddedLength() * 2;
-          }
-          parameters.put(i, value);
-        }
-      }
-      int dynamicParametersProcessed = 0;
-      int dynamicParametersToProcess =
-          getDynamicStructDynamicParametersCount(constructor.getParameterTypes());
-      for (int i = 0; i < length; ++i) {
-        final Class<T> declaredField = (Class<T>) constructor.getParameterTypes()[i];
-        if (isDynamic(declaredField)) {
-          final boolean isLastParameterInStruct =
-              dynamicParametersProcessed == (dynamicParametersToProcess - 1);
-          final int parameterLength =
-              isLastParameterInStruct
-                  ? input.length()
-                  - parameterOffsets.get(dynamicParametersProcessed)
-                  : parameterOffsets.get(dynamicParametersProcessed + 1)
-                      - parameterOffsets.get(dynamicParametersProcessed);
-          final Class<T> parameterFromAnnotation =
-              Utils.extractParameterFromAnnotation(
-                  constructor.getParameterAnnotations()[i]);
-          parameters.put(
-              i,
-              decodeDynamicParameterFromStruct(
-                  input,
-                  parameterOffsets.get(dynamicParametersProcessed),
-                  parameterLength,
-                  declaredField,
-                  parameterFromAnnotation));
-          dynamicParametersProcessed++;
-        }
-      }
-
-      String typeName = getSimpleTypeName(classType);
-
-      final List<T> elements = new ArrayList<>();
-      for (int i = 0; i < length; ++i) {
-        elements.add(parameters.get(i));
-      }
-
-      return consumer.apply(elements, typeName);
-    } catch (ClassNotFoundException e) {
-      throw new UnsupportedOperationException(
-          "Unable to access parameterized type "
-              + Utils.getTypeName(typeReference.getType()),
-          e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T extends Type> int getDynamicStructDynamicParametersCount(
-      final Class<?>[] cls) {
-    return (int) Arrays.stream(cls).filter(c -> isDynamic((Class<T>) c)).count();
-  }
-
-  private static <T extends Type> T decodeDynamicParameterFromStruct(
-      final String input,
-      final int parameterOffset,
-      final int parameterLength,
-      final Class<T> declaredField,
-      final Class<T> parameter)
-      throws ClassNotFoundException {
-    final String dynamicElementData =
-        input.substring(parameterOffset, parameterOffset + parameterLength);
-
-    final T value;
-    if (DynamicStruct.class.isAssignableFrom(declaredField)) {
-      value = decodeDynamicStruct(dynamicElementData, 0, TypeReference.create(declaredField));
-    } else if (DynamicArray.class.isAssignableFrom(declaredField)) {
-      if (parameter == null) {
-        throw new RuntimeException(
-            "parameter can not be null, try to use annotation @Parameterized "
-                + "to specify the parameter type");
-      }
-      value =
-          (T)
-              decodeDynamicArray(
-                  dynamicElementData,
-                  0,
-                  Utils.getDynamicArrayTypeReference(parameter));
-    } else {
-      value = decode(dynamicElementData, declaredField);
-    }
-    return value;
   }
 
   private static <T extends Type> T decodeDynamicParameterFromStructWithTypeReference(

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.tron.trident.abi.datatypes.Array;
 import org.tron.trident.abi.datatypes.DynamicArray;
 import org.tron.trident.abi.datatypes.DynamicBytes;
 import org.tron.trident.abi.datatypes.Fixed;
@@ -155,6 +156,65 @@ public class Utils {
     } else {
       return getDynamicArrayTypeReference(elementType);
     }
+  }
+
+  /**
+   * Builds the per-field TypeReferences for a user-defined struct class by reflecting on
+   * its Type-parameter constructor, so that reflection-path decoding
+   * ({@code TypeReference.create(MyStruct.class)} / {@code new TypeReference<MyStruct>() {}})
+   * runs through the same innerTypes-driven implementation as the ABI-JSON path.
+   *
+   * <p>Array-typed fields must carry the {@link Parameterized} annotation on the
+   * constructor parameter to declare their element type — the same contract
+   * {@link #getStructType(Class)} relies on for signature generation. Nested struct
+   * fields are left as plain class references; the decoder synthesizes their inner
+   * types on demand when it recurses into them.
+   */
+  static List<TypeReference<?>> buildStructInnerTypes(Class<?> structClass)
+      throws ClassNotFoundException {
+    Constructor constructor = findStructConstructor(structClass);
+    Class<?>[] parameterTypes = constructor.getParameterTypes();
+    Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+    List<TypeReference<?>> innerTypes = new ArrayList<>(parameterTypes.length);
+    for (int i = 0; i < parameterTypes.length; i++) {
+      @SuppressWarnings("unchecked")
+      Class<? extends Type> parameterType = (Class<? extends Type>) parameterTypes[i];
+      if (StructType.class.isAssignableFrom(parameterType)) {
+        innerTypes.add(TypeReference.create(parameterType));
+      } else if (Array.class.isAssignableFrom(parameterType)) {
+        Class<? extends Type> elementType =
+            extractParameterFromAnnotation(parameterAnnotations[i]);
+        if (elementType == null) {
+          throw new UnsupportedOperationException(
+              "Array-typed struct field " + parameterType.getSimpleName()
+                  + " of " + structClass.getName()
+                  + " requires the @Parameterized annotation on the constructor parameter"
+                  + " to declare its element type");
+        }
+        innerTypes.add(getTypeReferenceForParameterizedField(parameterType, elementType));
+      } else {
+        innerTypes.add(TypeReference.create(parameterType));
+      }
+    }
+    return innerTypes;
+  }
+
+  /**
+   * Wraps a struct TypeReference that lacks innerTypes with one whose innerTypes are
+   * synthesized from the struct class's constructor via {@link #buildStructInnerTypes}.
+   * The class type and indexed flag are preserved, so
+   * {@code instantiateStruct} still constructs the user's subclass.
+   */
+  static <T extends Type> TypeReference<T> withStructInnerTypes(
+      final TypeReference<T> typeReference) throws ClassNotFoundException {
+    final Class<T> classType = typeReference.getClassType();
+    List<TypeReference<?>> innerTypes = buildStructInnerTypes(classType);
+    return new TypeReference<T>(typeReference.isIndexed(), innerTypes) {
+      @Override
+      public java.lang.reflect.Type getType() {
+        return classType;
+      }
+    };
   }
 
   /**

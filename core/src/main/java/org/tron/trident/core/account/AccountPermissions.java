@@ -35,7 +35,6 @@ public class AccountPermissions {
   @Getter
   private Permission witnessPermission; // may be null if not present on-chain
 
-  @Getter
   private List<Permission> activePermissions;
 
   public AccountPermissions(Account account) {
@@ -44,6 +43,16 @@ public class AccountPermissions {
     this.witnessPermission = account.hasWitnessPermission() ? account.getWitnessPermission() : null;
     this.activePermissions = new ArrayList<>();
     this.activePermissions.addAll(account.getActivePermissionList());
+  }
+
+  /**
+   * get a copy of active permission list
+   *
+   * <p>This method returns a copy of the internal list, to update the active permissions, use
+   * {@link #setActivePermission(List)} instead.
+   */
+  public List<Permission> getActivePermissions() {
+    return new ArrayList<>(activePermissions);
   }
 
   /**
@@ -91,8 +100,7 @@ public class AccountPermissions {
       }
     }
 
-    this.activePermissions.clear();
-    this.activePermissions.addAll(actives);
+    this.activePermissions = new ArrayList<>(actives);
     return this;
   }
 

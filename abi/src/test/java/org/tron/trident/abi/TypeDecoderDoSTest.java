@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.datatypes.DynamicArray;
 import org.tron.trident.abi.datatypes.DynamicBytes;
 import org.tron.trident.abi.datatypes.DynamicStruct;
+import org.tron.trident.abi.datatypes.StaticStruct;
 import org.tron.trident.abi.datatypes.Utf8String;
 import org.tron.trident.abi.datatypes.generated.Uint256;
 
@@ -166,13 +167,14 @@ public class TypeDecoderDoSTest {
   }
 
   @Test
-  public void decodeDynamicArray_rejectsElementLengthCausingOffsetOverflow() {
-    // length=2; element0.length prefix = 0x7fffffe0 (~2^31 - 32, still ≤
-    // Integer.MAX_VALUE). (length/32 + 2) * 64 then overflows int.
+  public void decodeDynamicArray_rejectsElementDataOffsetCausingMulOverflow() {
+    // length=1; element0's dynamic head word (the data-offset pointer) = 0x40000000
+    // (= 2^30, bitLength 31, so it passes the decodeUintAsInt cap). getDataOffset then
+    // computes `pointer * 2`, which overflows int — without the multiplyExact guard it
+    // would wrap to a negative offset and silently alias earlier bytes.
     String malicious =
-        "0000000000000000000000000000000000000000000000000000000000000002"
-            + "000000000000000000000000000000000000000000000000000000007fffffe0"
-            + "0000000000000000000000000000000000000000000000000000000000000000";
+        "0000000000000000000000000000000000000000000000000000000000000001"
+            + "0000000000000000000000000000000000000000000000000000000040000000";
     assertThrows(
         IllegalArgumentException.class,
         () -> TypeDecoder.decodeDynamicArray(
@@ -191,15 +193,29 @@ public class TypeDecoderDoSTest {
             malicious, 0, new TypeReference<DynamicArray<Uint256>>() {}));
   }
 
+  /** Solidity: {@code struct TwoUints { uint256 a; uint256 b; }} (all-static, 2 slots). */
+  public static class TwoUints extends StaticStruct {
+    public TwoUints(Uint256 a, Uint256 b) {
+      super(a, b);
+    }
+  }
+
   @Test
-  public void decodeDynamicArray_nextOffsetGuardCatchesExactBoundary() {
-    String malicious =
+  public void decodeDynamicArray_advancesMultiSlotElementsToExactInputEnd() {
+    // A well-formed array of 2-slot static structs. This routes through
+    // advanceArrayElementOffset's static-struct site with a multi-slot stride
+    // (bytes32PaddedLength/32 = 2 slots per element), and the final element ends
+    // exactly at input.length() — locking the strict `>` boundary so a legitimate
+    // last element is not falsely rejected.
+    String legit =
         "0000000000000000000000000000000000000000000000000000000000000002"  // length=2
-            + "0000000000000000000000000000000000000000000000000000000000000001"; // only elem0
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TypeDecoder.decodeDynamicArray(
-            malicious, 0, new TypeReference<DynamicArray<Uint256>>() {}));
+            + "0000000000000000000000000000000000000000000000000000000000000001"  // elem0.a=1
+            + "0000000000000000000000000000000000000000000000000000000000000002"  // elem0.b=2
+            + "0000000000000000000000000000000000000000000000000000000000000003"  // elem1.a=3
+            + "0000000000000000000000000000000000000000000000000000000000000004"; // elem1.b=4
+    DynamicArray<TwoUints> result = TypeDecoder.decodeDynamicArray(
+        legit, 0, new TypeReference<DynamicArray<TwoUints>>() {});
+    assertEquals(2, result.getValue().size());
   }
 
   @Test

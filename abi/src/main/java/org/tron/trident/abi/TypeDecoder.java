@@ -314,7 +314,20 @@ public class TypeDecoder {
     }
   }
 
+  /**
+   * Rejects reads that would run past the end of the input: {@code windowLength}
+   * hex chars must exist at {@code offset}.
+   */
+  private static void checkWindowBounds(int inputLength, int offset, int windowLength) {
+    if (offset < 0 || windowLength < 0 || (long) offset + windowLength > inputLength) {
+      throw new IllegalArgumentException(
+          "Invalid ABI input: offset " + offset + " with length " + windowLength
+              + " out of bounds for length " + inputLength);
+    }
+  }
+
   static int decodeUintAsInt(String rawInput, int offset) {
+    checkWindowBounds(rawInput.length(), offset, MAX_BYTE_LENGTH_FOR_HEX_STRING);
     String input = rawInput.substring(offset, offset + MAX_BYTE_LENGTH_FOR_HEX_STRING);
     BigInteger value = decode(input, 0, Uint.class).getValue();
     if (value.bitLength() > 31) {
@@ -325,6 +338,7 @@ public class TypeDecoder {
   }
 
   public static Bool decodeBool(String rawInput, int offset) {
+    checkWindowBounds(rawInput.length(), offset, MAX_BYTE_LENGTH_FOR_HEX_STRING);
     String input = rawInput.substring(offset, offset + MAX_BYTE_LENGTH_FOR_HEX_STRING);
     BigInteger numericValue = Numeric.toBigInt(input);
     boolean value = numericValue.equals(BigInteger.ONE);
@@ -498,6 +512,7 @@ public class TypeDecoder {
               input, currOffset, classType, constructor, i, declaredField);
           currOffset += value.bytes32PaddedLength() * 2;
         } else {
+          checkWindowBounds(input.length(), currOffset, MAX_BYTE_LENGTH_FOR_HEX_STRING);
           value = decode(input.substring(currOffset, currOffset + 64), 0, declaredField);
           currOffset += 64;
         }
@@ -739,6 +754,7 @@ public class TypeDecoder {
         final T value;
         final int beginIndex = offset + staticOffset;
         if (isDynamicStructField(constructor, i)) {
+          checkWindowBounds(input.length(), beginIndex, MAX_BYTE_LENGTH_FOR_HEX_STRING);
           final int parameterOffset =
               decodeDynamicStructDynamicParameterOffset(
                   input.substring(beginIndex, beginIndex + 64))
@@ -746,6 +762,9 @@ public class TypeDecoder {
           parameterOffsets.add(parameterOffset);
           staticOffset += 64;
         } else {
+          // Static head fields occupy 64 hex chars each; downstream decodeNumeric
+          // assumes that, so reject short input here rather than letting arraycopy throw.
+          checkWindowBounds(input.length(), beginIndex, MAX_BYTE_LENGTH_FOR_HEX_STRING);
           if (StaticStruct.class.isAssignableFrom(declaredField)) {
             value =
                 decodeStaticStruct(
@@ -852,13 +871,7 @@ public class TypeDecoder {
       final Class<T> declaredField,
       final Class<T> parameter)
       throws ClassNotFoundException {
-    if (parameterOffset < 0
-        || parameterLength < 0
-        || (long) parameterOffset + parameterLength > input.length()) {
-      throw new IllegalArgumentException(
-          "Invalid ABI dynamic struct parameter window: offset=" + parameterOffset
-              + ", length=" + parameterLength + ", input=" + input.length());
-    }
+    checkWindowBounds(input.length(), parameterOffset, parameterLength);
     final String dynamicElementData =
         input.substring(parameterOffset, parameterOffset + parameterLength);
 
@@ -899,13 +912,7 @@ public class TypeDecoder {
       final int parameterLength,
       final TypeReference<T> parameterTypeReference)
       throws ClassNotFoundException {
-    if (parameterOffset < 0
-        || parameterLength < 0
-        || (long) parameterOffset + parameterLength > input.length()) {
-      throw new IllegalArgumentException(
-          "Invalid ABI dynamic struct parameter window: offset=" + parameterOffset
-              + ", length=" + parameterLength + ", input=" + input.length());
-    }
+    checkWindowBounds(input.length(), parameterOffset, parameterLength);
     final String dynamicElementData =
         input.substring(parameterOffset, parameterOffset + parameterLength);
     final Class<T> declaredField = parameterTypeReference.getClassType();
@@ -1061,7 +1068,8 @@ public class TypeDecoder {
     try {
       Class<T> cls = Utils.getParameterizedTypeFromArray(typeReference);
       int remainingHex = input.length() - offset;
-      if (length < 0
+      if (offset < 0
+          || length < 0
           || remainingHex < 0
           || length > remainingHex / MAX_BYTE_LENGTH_FOR_HEX_STRING) {
         throw new IllegalArgumentException(

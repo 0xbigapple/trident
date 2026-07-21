@@ -16,12 +16,15 @@ package org.tron.trident.abi;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.math.BigInteger;
+
 import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.datatypes.DynamicArray;
 import org.tron.trident.abi.datatypes.DynamicBytes;
 import org.tron.trident.abi.datatypes.DynamicStruct;
 import org.tron.trident.abi.datatypes.StaticStruct;
 import org.tron.trident.abi.datatypes.Utf8String;
+import org.tron.trident.abi.datatypes.generated.Int256;
 import org.tron.trident.abi.datatypes.generated.Uint256;
 
 /**
@@ -195,8 +198,13 @@ public class TypeDecoderDoSTest {
 
   /** Solidity: {@code struct TwoUints { uint256 a; uint256 b; }} (all-static, 2 slots). */
   public static class TwoUints extends StaticStruct {
+    public BigInteger a;
+    public BigInteger b;
+
     public TwoUints(Uint256 a, Uint256 b) {
       super(a, b);
+      this.a = a.getValue();
+      this.b = b.getValue();
     }
   }
 
@@ -218,6 +226,126 @@ public class TypeDecoderDoSTest {
     assertEquals(2, result.getValue().size());
   }
 
+  /** A nested TwoUints (128 hex chars) + trailing uint256 (64) = 192 hex chars expected. */
+  public static class NestedTwoUints extends StaticStruct {
+    public TwoUints inner;
+    public BigInteger c;
+
+    public NestedTwoUints(TwoUints inner, Uint256 c) {
+      super(inner, c);
+      this.inner = inner;
+      this.c = c.getValue();
+    }
+  }
+
+  @Test
+  public void decodeUintAsInt_rejectsInputShorterThanSlot() {
+    String malicious = "00";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeUintAsInt(malicious, 0));
+  }
+
+  @Test
+  public void decodeUintAsInt_rejectsOffsetPastInput() {
+    // Caller-supplied offset already past the end of input.
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000001";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeUintAsInt(malicious, 64));
+  }
+
+  @Test
+  public void decodeBool_rejectsInputShorterThanSlot() {
+    String malicious = "01";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeBool(malicious, 0));
+  }
+
+  @Test
+  public void decodeBool_rejectsOffsetPastInput() {
+    // Caller-supplied offset already past the end of input.
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000001";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeBool(malicious, 64));
+  }
+
+  @Test
+  public void decodeDynamicStruct_rejectsInputShorterThanStaticHead() {
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000020";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeDynamicStruct(
+            malicious, 0, new TypeReference<TwoStringsAndBytes>() {}));
+  }
+
+  public static class TwoStringsAndBytes extends DynamicStruct {
+    public String a;
+    public String b;
+    public byte[] c;
+
+    public TwoStringsAndBytes(Utf8String a, Utf8String b, DynamicBytes c) {
+      super(a, b, c);
+      this.a = a.getValue();
+      this.b = b.getValue();
+      this.c = c.getValue();
+    }
+  }
+
+  /** Dynamic struct whose first field is a static uint256 — exercises the static-field path. */
+  public static class StaticThenDynamic extends DynamicStruct {
+    public BigInteger a;
+    public String b;
+
+    public StaticThenDynamic(Uint256 a, Utf8String b) {
+      super(a, b);
+      this.a = a.getValue();
+      this.b = b.getValue();
+    }
+  }
+
+  @Test
+  public void decodeDynamicStruct_rejectsShortInputForStaticField() {
+    // Static head needs at least 64 hex chars for the first uint256 slot,
+    // but the input only has 60. Without a strict bounds check this slips past
+    // L537's `beginIndex > input.length()` guard and trips an
+    // ArrayIndexOutOfBoundsException inside decodeNumeric / arraycopy.
+    String malicious = "000000000000000000000000000000000000000000000000000000000000";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeDynamicStruct(
+            malicious, 0, new TypeReference<StaticThenDynamic>() {}));
+  }
+
+  @Test
+  public void decodeStaticStruct_rejectsInputShorterThanField() {
+    // TwoUints expects 128 hex chars (two 32-byte slots) but input has only 64.
+    // Without a bounds check the second `input.substring(64, 128)` throws SIOOBE.
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000001";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeStaticStruct(
+            malicious, 0, new TypeReference<TwoUints>() {}));
+  }
+
+  @Test
+  public void decodeStaticStruct_rejectsInputShorterThanNestedStruct() {
+    // NestedTwoUints expects 192 hex chars (nested 128 + tail 64) but only 64 provided.
+    // Exercises the nested-StaticStruct bounds branch.
+    String malicious =
+        "0000000000000000000000000000000000000000000000000000000000000001";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeStaticStruct(
+            malicious, 0, new TypeReference<NestedTwoUints>() {}));
+  }
+
   @Test
   public void decodeDynamicStruct_rejectsParameterOffsetExceedingInputLength() {
     String malicious =
@@ -233,5 +361,16 @@ public class TypeDecoderDoSTest {
         IllegalArgumentException.class,
         () -> TypeDecoder.decodeDynamicStruct(
             malicious, 0, new TypeReference<TwoStrings>() {}));
+  }
+
+  @Test
+  public void decodeNumeric_rejectsInputShorterThanSlot() {
+    // ABI numerics are always padded to 32 bytes (64 hex chars). The guard throws
+    // IndexOutOfBoundsException: decodeNumeric's multi-catch swallows
+    // IllegalArgumentException (for reflective newInstance) and would wrap it.
+    String malicious = "00";
+    assertThrows(
+        IndexOutOfBoundsException.class,
+        () -> TypeDecoder.decodeNumeric(malicious, Uint256.class));
   }
 }

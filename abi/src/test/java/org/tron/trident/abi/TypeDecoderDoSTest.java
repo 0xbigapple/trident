@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 import org.tron.trident.abi.datatypes.DynamicArray;
@@ -361,6 +362,36 @@ public class TypeDecoderDoSTest {
         IllegalArgumentException.class,
         () -> TypeDecoder.decodeDynamicStruct(
             malicious, 0, new TypeReference<TwoStrings>() {}));
+  }
+
+  @Test
+  public void decodeStaticStruct_innerTypes_rejectsShortInput() throws Exception {
+    TypeReference<StaticStruct> ref =
+        new TypeReference<StaticStruct>(
+            false,
+            Arrays.asList(
+                TypeReference.makeTypeReference("uint256"),
+                TypeReference.makeTypeReference("uint256"))) {};
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeStaticStruct("00", 0, ref));
+  }
+
+  @Test
+  public void decodeDynamicStruct_innerTypes_rejectsShortHead() throws Exception {
+    TypeReference<DynamicStruct> ref =
+        new TypeReference<DynamicStruct>(
+            false,
+            Arrays.asList(
+                TypeReference.makeTypeReference("string"),
+                TypeReference.makeTypeReference("uint256"))) {};
+    // One 64-hex-char slot: enough for the string head, nothing left for the
+    // uint256 static head field.
+    String oneSlot =
+        "0000000000000000000000000000000000000000000000000000000000000040";
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TypeDecoder.decodeDynamicStruct(oneSlot, 0, ref));
   }
 
   @Test

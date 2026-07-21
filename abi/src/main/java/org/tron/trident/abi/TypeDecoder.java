@@ -473,6 +473,7 @@ public class TypeDecoder {
           currOffset += (value.bytes32PaddedLength() / Type.MAX_BYTE_LENGTH)
               * MAX_BYTE_LENGTH_FOR_HEX_STRING;
         } else {
+          checkWindowBounds(input.length(), currOffset, MAX_BYTE_LENGTH_FOR_HEX_STRING);
           value = decode(input.substring(currOffset, currOffset + 64), 0, declaredField);
           currOffset += MAX_BYTE_LENGTH_FOR_HEX_STRING;
         }
@@ -655,6 +656,7 @@ public class TypeDecoder {
       final T value;
       final int beginIndex = offset + tracker.staticOffset;
       if (isDynamic(innerType)) {
+        checkWindowBounds(input.length(), beginIndex, MAX_BYTE_LENGTH_FOR_HEX_STRING);
         final int parameterOffset =
             decodeDynamicStructDynamicParameterOffset(
                 input.substring(beginIndex, beginIndex + 64))
@@ -663,6 +665,7 @@ public class TypeDecoder {
         tracker.staticOffset += 64;
         tracker.dynamicParametersToProcess += 1;
       } else {
+        checkWindowBounds(input.length(), beginIndex, MAX_BYTE_LENGTH_FOR_HEX_STRING);
         if (StaticStruct.class.isAssignableFrom(declaredField)) {
           value = decodeStaticStruct(input, beginIndex, innerType);
           tracker.staticOffset += (value.bytes32PaddedLength() / Type.MAX_BYTE_LENGTH)
